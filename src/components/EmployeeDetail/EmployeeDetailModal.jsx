@@ -333,10 +333,10 @@ const EmployeeDetailModal = ({
 
   const fetchTimekeepingData = async () => {
     setIsCalendarLoading(true);
-
     try {
       const start = startOfMonth(currentMonth);
       const end = endOfMonth(currentMonth);
+      console.log("=====employee====",employee)
       if (employee) {
         const res = await Get_TIMEKEEPING_By_StaffID(
           statechinhanh,
@@ -344,6 +344,7 @@ const EmployeeDetailModal = ({
           end,
           employee.id
         );
+        console.log("=====res===",res)
         if (res && res.length > 0) {
           setTimekeepingData(res);
           const formattedData = res.map((item) => ({
@@ -360,7 +361,7 @@ const EmployeeDetailModal = ({
         }
       }
     } catch (error) {
-      console.error(error);
+      console.log("=====error===",error)
     } finally {
       setIsCalendarLoading(false); // Kết thúc trạng thái loading cho lịch
     }
@@ -487,7 +488,6 @@ const EmployeeDetailModal = ({
     onClose();
   };
   if (!employee) return null;
-  console.log("dailyTimes", dailyTimes);
   return (
     <Modal open={open} onClose={handleModalClose}>
       <Box

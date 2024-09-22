@@ -74,7 +74,6 @@ const Topbar = () => {
     setDropdownOpen((prev) => !prev);
     setIsBlinking(false);
   };
-console.log("stateBranch", stateBranch);
   const GET_ALL_PHIEU_STORE = async () => {
     const getP = await Get_all_Phieu_Store_By_Status("PENDING");
     const resW = await Get_all_Phieu_Store_By_Status("WAITING");

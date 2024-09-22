@@ -103,6 +103,7 @@ const Team = () => {
   };
 
   const handleRowDoubleClick = (params) => {
+    console.log("=====params===",params)
     setSelectedEmployee(params.row);
     setOpenModal(true);
   };
@@ -1048,7 +1049,7 @@ const Team = () => {
 
   const fetchingGettAllStaft_by_branchID = async (x) => {
     const check = await Get_all_User_By_branchID(x);
-
+    console.log("====== check===",check)
     if (check instanceof Promise) {
       const resolvedResult = await check;
       setStateStaff(JSON.parse(resolvedResult));
