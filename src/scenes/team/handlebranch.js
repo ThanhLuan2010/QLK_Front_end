@@ -21,7 +21,7 @@ export const Get_all_User_By_branchID = async (req) => {
       branchID: req,
     })
   );
-  console.log("=====response===",response)
+  console.log("=====response===", response);
   return JSON.stringify(response.All_Branch);
 };
 

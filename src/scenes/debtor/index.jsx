@@ -290,7 +290,7 @@ const DEBTORS = () => {
     // Tách phần số từ chuỗi 'id' và chuyển đổi thành số nguyên
 
     const arrayOfNumbers = stateHoadon.map((obj) =>
-      parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+      parseInt(obj.id?.replace(/[^\d]/g, ""), 10)
     );
 
     // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'

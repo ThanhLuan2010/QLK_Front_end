@@ -391,13 +391,13 @@ const Dashboard = () => {
     if (objBranch instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await objBranch;
-      const formattedContent = resolvedResult.replace(/ƒ/g, "\n");
+      const formattedContent = resolvedResult?.replace(/ƒ/g, "\n");
 
       setTextAreaValue(formattedContent);
     } else {
       // Nếu không phải là promise, cập nhật state ngay lập tức
       const stringc = objBranch;
-      const formattedContent = stringc.replace(/ƒ/g, "\n");
+      const formattedContent = stringc?.replace(/ƒ/g, "\n");
 
       setTextAreaValue(formattedContent);
     }
@@ -429,7 +429,7 @@ const Dashboard = () => {
 
       let check = await GET_ALL_MONEY_BY_STOREID_THOIDIEM_OF_PHIEUSTORE(handle);
 
-      arrayA = arrayA.concat(check.All_DOANHTHU);
+      arrayA = arrayA.concat(check?.All_DOANHTHU);
     }
 
     setMockdataNhapKho(arrayA);
@@ -449,7 +449,7 @@ const Dashboard = () => {
 
       let check = await GET_ALL_MONEY_BY_STOREID_THOIDIEM_OF_DOANHTHU(handle);
 
-      arrayA = arrayA.concat(check.All_DOANHTHU);
+      arrayA = arrayA.concat(check?.All_DOANHTHU);
     }
 
     setMockdataBan(arrayA);

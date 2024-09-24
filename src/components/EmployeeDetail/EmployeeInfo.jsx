@@ -17,8 +17,8 @@ import i18n from "../../i18n/i18n";
 import { HandleUpload } from "../../scenes/sendfileFTP/sendfileFTP";
 import useStyles from "./EmployeeDetail";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Add } from "@mui/icons-material";
+import { ROLE_EMPLOYEE } from "../../utils/constant";
 
 const EmployeeInfo = ({
   statechinhanh,
@@ -36,9 +36,12 @@ const EmployeeInfo = ({
   const [isNewEmployeeOpen, setIsNewEmployeeOpen] = useState(false);
   const [newEmployeeName, setNewEmployeeName] = useState("");
   const [employeeOptions, setEmployeeOptions] = useState([
-    { value: "QL", label: "Quản Lý" },
-    { value: "PQL", label: "Phó Quản Lý" },
-    { value: "NV", label: "Nhân Viên" },
+    { value: ROLE_EMPLOYEE.MANAGER.VALUE, label: ROLE_EMPLOYEE.MANAGER.LABEL },
+    {
+      value: ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE,
+      label: ROLE_EMPLOYEE.DEPUTY_MANAGER.LABEL,
+    },
+    { value: ROLE_EMPLOYEE.STAFF.VALUE, label: ROLE_EMPLOYEE.STAFF.LABEL },
   ]);
   const handleFocus = (fieldName) => {
     setFocusedField(fieldName);
@@ -75,9 +78,9 @@ const EmployeeInfo = ({
       setCurrentBackImage(EditStaffForm.pictureTwo);
     }
     if (
-      EditStaffForm.Role !== "NV" &&
-      EditStaffForm.Role !== "QL" &&
-      EditStaffForm.Role !== "PQL"
+      EditStaffForm.Role !== ROLE_EMPLOYEE.STAFF.VALUE &&
+      EditStaffForm.Role !== ROLE_EMPLOYEE.MANAGER.VALUE &&
+      EditStaffForm.Role !== ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE
     ) {
       setEditRole(true);
     }
@@ -177,7 +180,7 @@ const EmployeeInfo = ({
             justifyContent={"space-between"}
           >
             <Typography variant="h4" fontSize={"1.25rem"} fontWeight={"bold"}>
-            {i18n.t("Detail")}
+              {i18n.t("Detail")}
             </Typography>
             <IconButton
               size="small"
@@ -283,11 +286,11 @@ const EmployeeInfo = ({
             >
               {predefinedRoles.map((role) => (
                 <MenuItem key={role} value={role}>
-                  {role === "QL"
-                    ? "Quản Lý"
-                    : role === "PQL"
-                    ? "Phó Quản Lý"
-                    : "Nhân Viên"}
+                  {role === ROLE_EMPLOYEE.MANAGER.VALUE
+                    ? ROLE_EMPLOYEE.MANAGER.LABEL
+                    : role === ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE
+                    ? ROLE_EMPLOYEE.DEPUTY_MANAGER.LABEL
+                    : ROLE_EMPLOYEE.STAFF.LABEL}
                 </MenuItem>
               ))}
               {!predefinedRoles.includes(EditStaffForm.Role) && (
@@ -397,7 +400,7 @@ const EmployeeInfo = ({
               variant="contained"
             >
               <Typography fontSize={"0.8rem"} textTransform={"none"}>
-              {i18n.t("Update")}
+                {i18n.t("Update")}
               </Typography>
             </Button>
           </Box>

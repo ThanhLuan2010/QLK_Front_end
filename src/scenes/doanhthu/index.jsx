@@ -236,7 +236,7 @@ const DOANHTHU = () => {
 
   const getlenghtID_Bill = () => {
     const arrayOfNumbers = stateHoadon.map((obj) =>
-      parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+      parseInt(obj.id?.replace(/[^\d]/g, ""), 10)
     );
     let maxNumber = Math.max(...arrayOfNumbers);
     if (maxNumber === -Infinity || maxNumber === Infinity) {

@@ -158,7 +158,7 @@ const ProductModal = ({
   const handleChange = (e) => {
     const { name, value } = e.target;
     const arrayOfNumbers = stateProduct.map((obj) =>
-      parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+      parseInt(obj.id?.replace(/[^\d]/g, ""), 10)
     );
     let maxNumber = Math.max(...arrayOfNumbers);
     const result = 1 / 0;

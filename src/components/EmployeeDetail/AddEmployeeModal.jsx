@@ -13,6 +13,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Autocomplete,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import i18n from "../../i18n/i18n";
 import { HandleUpload } from "../../scenes/sendfileFTP/sendfileFTP";
@@ -20,14 +23,11 @@ import useStyles from "./EmployeeDetail";
 import CloseIcon from "@mui/icons-material/Close";
 import { HandleCreateStaff } from "../../scenes/team/handlestaff";
 import { Add } from "@mui/icons-material";
+import { handleConvertDate } from "../../helper";
+import { ROLE_EMPLOYEE } from "../../utils/constant";
+import { getAllBankName } from "./../../scenes/team/handleBank";
 
-const AddEmployeeModal = ({
-  open,
-  onClose,
-  statechinhanh,
-  updateTimekeepingData,
-  updateStaff,
-}) => {
+const AddEmployeeModal = ({ open, onClose, statechinhanh, updateStaff }) => {
   const classes = useStyles();
   const [editRole, setEditRole] = useState(false);
   const [currentFrontImage, setCurrentFrontImage] = useState("");
@@ -39,18 +39,24 @@ const AddEmployeeModal = ({
     Role: "",
     branchID: statechinhanh,
     AccountBank: "",
+    bankName: "",
     id: "",
     ngayvao: "",
     picture: "",
     pictureTwo: "",
   });
+  const [errors, setErrors] = useState({});
   const [isNewEmployeeOpen, setIsNewEmployeeOpen] = useState(false);
   const [newEmployeeName, setNewEmployeeName] = useState("");
   const [employeeOptions, setEmployeeOptions] = useState([
-    { value: "QL", label: "Quản Lý" },
-    { value: "PQL", label: "Phó Quản Lý" },
-    { value: "NV", label: "Nhân Viên" },
+    { value: ROLE_EMPLOYEE.MANAGER.VALUE, label: ROLE_EMPLOYEE.MANAGER.LABEL },
+    {
+      value: ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE,
+      label: ROLE_EMPLOYEE.DEPUTY_MANAGER.LABEL,
+    },
+    { value: ROLE_EMPLOYEE.STAFF.VALUE, label: ROLE_EMPLOYEE.STAFF.LABEL },
   ]);
+  const [options, setOptions] = useState([]);
 
   const handleFocus = (fieldName) => {
     setFocusedField(fieldName);
@@ -83,14 +89,30 @@ const AddEmployeeModal = ({
   };
 
   useEffect(() => {
+    (async () => {
+      const response = await getAllBankName();
+      if (response) {
+        const dataOption = JSON.parse(response)?.map((item) => {
+          return {
+            label: item.shortName,
+            value: item.code,
+            image: item.logo,
+          };
+        });
+        setOptions(dataOption);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
     if (AddStaffForm) {
       setCurrentFrontImage(AddStaffForm.picture);
       setCurrentBackImage(AddStaffForm.pictureTwo);
     }
     if (
-      AddStaffForm.Role !== "NV" &&
-      AddStaffForm.Role !== "QL" &&
-      AddStaffForm.Role !== "PQL"
+      AddStaffForm.Role !== ROLE_EMPLOYEE.STAFF.VALUE &&
+      AddStaffForm.Role !== ROLE_EMPLOYEE.MANAGER.VALUE &&
+      AddStaffForm.Role !== ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE
     ) {
       setEditRole(true);
     }
@@ -104,7 +126,6 @@ const AddEmployeeModal = ({
     });
   };
 
-  const [errors, setErrors] = useState({});
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
@@ -116,6 +137,7 @@ const AddEmployeeModal = ({
       "Role",
       "ngayvao",
       "AccountBank",
+      "bankName",
     ];
 
     requiredFields.forEach((field) => {
@@ -139,11 +161,21 @@ const AddEmployeeModal = ({
   const handleSubmit = async () => {
     try {
       await HandleCreateStaff(AddStaffForm);
-      alert("Thêm thành công");
       onClose();
+      alert("Thêm thành công");
+      setAddStaffForm({
+        name: "",
+        phone: "",
+        Role: "",
+        branchID: statechinhanh,
+        AccountBank: "",
+        id: "",
+        ngayvao: "",
+        picture: "",
+        pictureTwo: "",
+      });
       await updateStaff(statechinhanh);
     } catch (error) {
-      console.error("Failed to create staff", error);
       alert("Thêm nhân viên thất bại!");
     }
   };
@@ -164,7 +196,7 @@ const AddEmployeeModal = ({
         return;
       }
       const newEmployeeOption = {
-        value: newEmployeeName.toUpperCase().replace(/\s+/g, "_"),
+        value: newEmployeeName.toUpperCase()?.replace(/\s+/g, "_"),
         label: newEmployeeName,
       };
       setEmployeeOptions((prevOptions) => [...prevOptions, newEmployeeOption]);
@@ -172,6 +204,10 @@ const AddEmployeeModal = ({
       setNewEmployeeName("");
       setIsNewEmployeeOpen(false);
     }
+  };
+
+  const handleChangeMenu = (_, newValue) => {
+    setAddStaffForm((previous) => ({ ...previous, bankName: newValue?.value }));
   };
 
   return (
@@ -233,7 +269,10 @@ const AddEmployeeModal = ({
               helperText={errors["id"]}
               value={AddStaffForm.id}
               onChange={(e) => handleChange("id", e.target.value)}
-              onFocus={() => handleFocus("id")}
+              onFocus={() => {
+                errors["id"] = false;
+                handleFocus("id");
+              }}
               onBlur={handleBlur}
             />
             <Typography
@@ -252,7 +291,10 @@ const AddEmployeeModal = ({
               className={classes.textField}
               value={AddStaffForm.name}
               onChange={(e) => handleChange("name", e.target.value)}
-              onFocus={() => handleFocus("name")}
+              onFocus={() => {
+                handleFocus("name");
+                errors["name"] = false;
+              }}
               onBlur={handleBlur}
             />
             <Typography
@@ -271,7 +313,10 @@ const AddEmployeeModal = ({
               className={classes.textField}
               value={AddStaffForm.phone}
               onChange={(e) => handleChange("phone", e.target.value)}
-              onFocus={() => handleFocus("phone")}
+              onFocus={() => {
+                handleFocus("phone");
+                errors["phone"] = false;
+              }}
               onBlur={handleBlur}
             />
             <Typography
@@ -325,9 +370,78 @@ const AddEmployeeModal = ({
               helperText={errors["ngayvao"]}
               className={classes.textField}
               value={AddStaffForm.ngayvao}
-              onChange={(e) => handleChange("ngayvao", e.target.value)}
-              onFocus={() => handleFocus("ngayvao")}
+              type="date"
+              readOnly
+              onChange={(e) => {
+                const [year, month, day] = e.target.value.split("-");
+                handleChange("ngayvao", handleConvertDate(day, month, year));
+              }}
+              onFocus={() => {
+                errors["ngayvao"] = false;
+                handleFocus("ngayvao");
+              }}
               onBlur={handleBlur}
+            />
+            <Typography
+              color={focusedField === "bankName" ? "black" : "#D9D2D2"}
+              variant="body1"
+              onFocus={() => handleFocus("bankName")}
+              onBlur={handleBlur}
+            >
+              {" "}
+              {i18n.t("TENNH")}
+            </Typography>
+            {/* <TextField
+              error={!!errors["bankName"]}
+              helperText={errors["bankName"]}
+              className={classes.textField}
+              value={AddStaffForm.bankName}
+              onChange={(e) => handleChange("bankName", e.target.value)}
+              onFocus={() => {
+                handleFocus("bankName");
+                setIsShowMenuBank(true);
+              }}
+              onBlur={handleCloseMenu}
+            />
+            <NativeSelect
+              defaultValue={30}
+              inputProps={{
+                name: "age",
+                id: "uncontrolled-native",
+              }}
+            >
+              <option value={10}>Ten</option>
+              <option value={20}>Twenty</option>
+              <option value={30}>Thirty</option>
+            </NativeSelect> */}
+            <Autocomplete
+              options={options}
+              getOptionLabel={(option) => option.label}
+              onChange={handleChangeMenu}
+              renderOption={(props, option) => (
+                <ListItem {...props}>
+                  <img
+                    src={option.image}
+                    alt={option.value}
+                    style={{ width: 60, height: 28, marginRight: 12 }}
+                  />
+                  <ListItemText primary={option.label} />
+                </ListItem>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  error={!!errors["bankName"]}
+                  helperText={errors["bankName"]}
+                  className={classes.textField}
+                  value={AddStaffForm.bankName}
+                  onChange={(e) => {
+                    errors["bankName"] = false;
+                    handleChange("bankName", e.target.value);
+                  }}
+                />
+              )}
+              openOnFocus
             />
             <Typography
               color={focusedField === "AccountBank" ? "black" : "#D9D2D2"}
@@ -344,9 +458,13 @@ const AddEmployeeModal = ({
               className={classes.textField}
               value={AddStaffForm.AccountBank}
               onChange={(e) => handleChange("AccountBank", e.target.value)}
-              onFocus={() => handleFocus("AccountBank")}
+              onFocus={() => {
+                errors["AccountBank"] = false;
+                handleFocus("AccountBank");
+              }}
               onBlur={handleBlur}
             />
+
             <Box
               justifyContent={"center"}
               alignItems={"center"}
@@ -354,12 +472,14 @@ const AddEmployeeModal = ({
               flexDirection={"column"}
               mt={2}
             >
-              <img
-                src={currentFrontImage}
-                alt="Mặt trước CCCD"
-                width={300}
-                style={{ marginTop: "16px", borderRadius: "20px" }}
-              />
+              {currentFrontImage && (
+                <img
+                  src={currentFrontImage}
+                  alt="Mặt trước CCCD"
+                  width={300}
+                  style={{ marginTop: "16px", borderRadius: "20px" }}
+                />
+              )}
               <label htmlFor="picture">{i18n.t("CCCDF")}</label>
               <input
                 accept="image/*"
@@ -370,12 +490,14 @@ const AddEmployeeModal = ({
                 id="picture"
                 name="picture"
               ></input>
-              <img
-                src={currentBackImage}
-                alt="Mặt sau CCCD"
-                width={300}
-                style={{ marginTop: "16px", borderRadius: "20px" }}
-              />
+              {currentBackImage && (
+                <img
+                  src={currentBackImage}
+                  alt="Mặt sau CCCD"
+                  width={300}
+                  style={{ marginTop: "16px", borderRadius: "20px" }}
+                />
+              )}
               <label htmlFor="pictureTwo">{i18n.t("CCCDB")}</label>
               <input
                 accept="image/*"

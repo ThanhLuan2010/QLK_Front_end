@@ -9,7 +9,7 @@ export const GET_Notifi_BY_ID = async (req) => {
         id: "id01",
       })
     );
-    return JSON.stringify(response.notifications.content);
+    return JSON.stringify(response.notifications?.content);
   }
 };
 
