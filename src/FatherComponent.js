@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OrderProvider } from "./context/OrderContext";
 import { SidebarProvider } from "./context/SidebarContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Father({ children }) {
   const [theme, colorMode] = useMode();
@@ -55,6 +57,7 @@ function Father({ children }) {
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
+        <ToastContainer />
         <CssBaseline />
         <SidebarProvider>
           <OrderProvider>

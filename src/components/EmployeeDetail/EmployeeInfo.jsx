@@ -259,7 +259,7 @@ const EmployeeInfo = ({
             onBlur={handleBlur}
           >
             {" "}
-            {i18n.t("Chức vụ")}
+            {i18n.t("CV_TEAM")}
           </Typography>
 
           {/* {editRole ? (

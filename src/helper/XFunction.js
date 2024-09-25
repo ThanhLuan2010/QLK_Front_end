@@ -1,6 +1,7 @@
 export const handleGetDayTime = (originalDateString) => {
-  const today = new Date(!!originalDateString ?? originalDateString);
-
+  let today;
+  if (originalDateString) today = new Date(originalDateString);
+  else today = new Date();
   const year = today.getFullYear();
   const month = (today.getMonth() + 1).toString().padStart(2, "0");
   const day = today.getDate().toString().padStart(2, "0");

@@ -6,6 +6,16 @@ i18n.use(initReactI18next).init({
   resources: {
     vi: {
       translation: {
+        // Message
+        FIELD_REQUIRED: "Trường này không được bỏ trống",
+        NUMBER_REQUIRED: "Trường này phải là số",
+        PHONE_REQUIRED: "Trường này phải là số điện thoại",
+        ROLE_EXISTED: "Chức vụ đã tồn tại",
+
+        // Message Team
+        SUCCESS_ADD_EMPLOYEE: "Thêm nhân viên thành công",
+        FAILURE_ADD_EMPLOYEE: "Thêm nhân viên thất bại",
+
         //other
         OT_BANGCHAMCONG: "Bảng chấm công",
         OT_CHOTCONG: "Chốt công",
@@ -62,6 +72,7 @@ i18n.use(initReactI18next).init({
         NGAYKT: "Ngày kết thúc",
         TONGSOGIOLAM: "TÍNH TỔNG SỐ GIỜ LÀM",
         KIEMTRASOGIOLAM: "KIỂM TRA SỐ GIỜ LÀM",
+        ADD_ROLE: "Thêm chức vụ",
         //BRANCH
         CTTONGQUAN: "Chi tiết tổng quan chi nhánh",
         TITLEBRANCH: "Chi nhánh",
@@ -275,6 +286,16 @@ i18n.use(initReactI18next).init({
     },
     ko: {
       translation: {
+        // Message
+        FIELD_REQUIRED: "이 필드는 비워둘 수 없습니다",
+        NUMBER_REQUIRED: "이 필드는 숫자여야 합니다",
+        PHONE_REQUIRED: "이 필드는 전화번호여야 합니다",
+
+        // Message Team
+        SUCCESS_ADD_EMPLOYEE: "직원을 추가했습니다",
+        FAILURE_ADD_EMPLOYEE: "더 많은 직원이 실패합니다",
+        ROLE_EXISTED: "해당 위치가 이미 존재합니다",
+
         //other
         OT_BANGCHAMCONG: "출근부",
         OT_CHOTCONG: "결근",
@@ -340,6 +361,7 @@ i18n.use(initReactI18next).init({
         ALERT_THEMNHANVIEN_TEAM: "직원이 성공적으로 추가되었습니다",
         QLMCC: "출퇴근 기록 관리",
         THOIDIEMTAOPHIEU: "전표 생성 시점",
+        ADD_ROLE: "위치 추가",
         //BRANCH
         TITLEBRANCH: "지점",
         DESBRANCH: "지점 정보 관리",
