@@ -51,6 +51,7 @@ import CommonStyle from "../../components/CommonStyle";
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import { handleCheckExistId, handleGetDayTime } from "../../helper";
 import { ROLE_EMPLOYEE } from "../../utils/constant";
+import useGetData from "../../hook/fetchData";
 
 const Team = () => {
   useTranslation();
@@ -817,8 +818,8 @@ const Team = () => {
                 const secondShiftRemainingMinutes = secondShiftMinutes % 60;
                 shift2[day - 1] =
                   (shift2[day - 1] || 0) +
-                    secondShiftHours +
-                    secondShiftRemainingMinutes / 60 || "";
+                  secondShiftHours +
+                  secondShiftRemainingMinutes / 60 || "";
               } else if (startHour >= 19) {
                 shift2[day - 1] =
                   (shift2[day - 1] || 0) + totalMinutesWorked / 60 || "";
@@ -941,31 +942,31 @@ const Team = () => {
 
   let checkaccess = false;
   let chinhanhdau = "";
-  const fetchingBranch = async () => {
-    if (checkaccess || checkaccess === "true") {
-      const objBranch = Get_all_branch();
+  // const fetchingBranch = async () => {
+  //   if (checkaccess || checkaccess === "true") {
+  //     const objBranch = Get_all_branch();
 
-      if (objBranch instanceof Promise) {
-        const resolvedResult = await objBranch;
-        setStateBranch(JSON.parse(resolvedResult));
-        chinhanhdau = JSON.parse(resolvedResult)[0].branchID;
-      } else {
-        setStateBranch(JSON.parse(objBranch));
-        chinhanhdau = JSON.parse(objBranch)[0].branchID;
-      }
-    } else {
-      const objBranch = Get_all_branch_By_userid();
+  //     if (objBranch instanceof Promise) {
+  //       const resolvedResult = await objBranch;
+  //       setStateBranch(JSON.parse(resolvedResult));
+  //       chinhanhdau = JSON.parse(resolvedResult)[0].branchID;
+  //     } else {
+  //       setStateBranch(JSON.parse(objBranch));
+  //       chinhanhdau = JSON.parse(objBranch)[0].branchID;
+  //     }
+  //   } else {
+  //     const objBranch = Get_all_branch_By_userid();
 
-      if (objBranch instanceof Promise) {
-        const resolvedResult = await objBranch;
-        setStateBranch(JSON.parse(resolvedResult));
-        chinhanhdau = JSON.parse(resolvedResult)[0].branchID;
-      } else {
-        setStateBranch(JSON.parse(objBranch));
-        chinhanhdau = JSON.parse(objBranch)[0].branchID;
-      }
-    }
-  };
+  //     if (objBranch instanceof Promise) {
+  //       const resolvedResult = await objBranch;
+  //       setStateBranch(JSON.parse(resolvedResult));
+  //       chinhanhdau = JSON.parse(resolvedResult)[0].branchID;
+  //     } else {
+  //       setStateBranch(JSON.parse(objBranch));
+  //       chinhanhdau = JSON.parse(objBranch)[0].branchID;
+  //     }
+  //   }
+  // };
   const fetchingTimekeep = async (branchId, createF, createT) => {
     setIsLoadingTimekeeping(true);
     const jsonfetch = {
@@ -1015,7 +1016,7 @@ const Team = () => {
       setStateStaff(JSON.parse(check));
     }
   };
-  
+
   const fetchingGettAllStaftOff_by_branchID = async (x) => {
     const check = await Get_all_STAFFOFF_By_branchID(x);
     if (check instanceof Promise) {
@@ -1032,6 +1033,28 @@ const Team = () => {
     await fetchingGettAllStaftOff_by_branchID(e.target.value);
     // setStartDate(datetimeToday);
     // setEndDate(datetimeToday);
+  };
+  const { data, loading } = useGetData({ url: '/Branch/admin/getallbranch/' })
+
+  const fetchingBranch = async () => {
+    if (checkaccess || checkaccess === "true") {
+      const objBranch = data?.All_Branch;
+      // console.log("🚀 ~ fetchingBranch ~ objBranch:", objBranch)
+
+      setStateBranch(objBranch);
+      chinhanhdau = objBranch[0].branchID;
+    } else {
+      const objBranch = Get_all_branch_By_userid();
+
+      if (objBranch instanceof Promise) {
+        const resolvedResult = await objBranch;
+        setStateBranch(JSON.parse(resolvedResult));
+        chinhanhdau = JSON.parse(resolvedResult)[0].branchID;
+      } else {
+        setStateBranch(JSON.parse(objBranch));
+        chinhanhdau = JSON.parse(objBranch)[0].branchID;
+      }
+    }
   };
   useEffect(() => {
     const fetchingapi = async () => {
@@ -1051,7 +1074,6 @@ const Team = () => {
         await fetchData();
         setStatechinhanh(chinhanhdau);
 
-        // Thiết lập tháng hiện tại
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth() + 1;
         setSelectedMonth({ year: currentYear, month: currentMonth });
@@ -1067,7 +1089,7 @@ const Team = () => {
     };
 
     fetchingapi();
-  }, []);
+  }, [loading]);
 
 
 

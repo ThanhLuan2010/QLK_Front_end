@@ -1,80 +1,40 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useState } from "react";
-import { BASE_URL, baseQuery } from "../api/baseQuery";
-import { getState } from "../store/configStore";
+import Url_BackEnd from "../URL";
+import { firstValueFrom } from "rxjs";
+import { Method } from "../api/common";
 
 const useGetData = ({
   url = "",
   query,
-  isLazy = true,
-  isLoading = true,
+  pageSize = 10
 }) => {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [loading, setloading] = useState(false);
-  const [canLoadMore, setCanLoadMore] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await firstValueFrom(
+        Method.get(`${Url_BackEnd}${url}`)
+      );
+      setData(response);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [url, page, pageSize]);
 
   useEffect(() => {
-      getData(1);
-      setPage(1);
-  }, []);
+    fetchData();
+  }, [fetchData]);
 
-  const reLoad = () => {
-    getData(1);
-    setPage(1);
-  };
-
-  const onLoadMore = () => {
-    if (canLoadMore) {
-      if (!loading) {
-        getData(page + 1);
-        setPage(page + 1);
-      }
-    }
-  };
-
-  const getData = async (_page = page) => {
-    
-    // setCanLoadMore(true);
-    // setloading(true);
-    // const response = await baseQuery({
-    //   url: url,
-    //   query: isLazy
-    //     ? {
-    //         page: _page,
-    //         ...query,
-    //       }
-    //     : null,
-    // });
-    // if (url?.includes("rule/get-rule")) {
-    // }
-    // if (isLazy) {
-    //   if (response?.data?.page === 1) {
-        
-    //     setData(response?.data?.results);
-    //   } else {
-    //     setData(data?.concat(response?.data?.results));
-    //   }
-    //   if (response?.data?.results?.length < 10) {
-    //     setCanLoadMore(false);
-    //   }
-    //   setTotal(response?.data?.totalResults);
-    // } else {
-    //   setData(response?.data);
-    // }
-
-    // setloading(false);
-  };
-
-  return {
-    data,
-    setData,
-    reLoad,
-    onLoadMore,
-    loading,
-    total,
-  };
+  return { data, loading, error };
 };
 
 export default useGetData;
