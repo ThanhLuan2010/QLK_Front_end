@@ -1015,6 +1015,7 @@ const Team = () => {
       setStateStaff(JSON.parse(check));
     }
   };
+  
   const fetchingGettAllStaftOff_by_branchID = async (x) => {
     const check = await Get_all_STAFFOFF_By_branchID(x);
     if (check instanceof Promise) {
@@ -1068,84 +1069,8 @@ const Team = () => {
     fetchingapi();
   }, []);
 
-  const [addStaffForm, setAddStaffForm] = useState({
-    name: "",
-    phone: "",
-    Role: "",
-    branchID: "",
-    id: "",
-    ngayvao: "",
-    AccountBank: "",
-    picture: "",
-    pictureTwo: "",
-  });
 
-  const [EditStaffForm, setEditStaffForm] = useState({
-    name: "",
-    phone: "",
-    Role: "",
-    branchID: "",
-    AccountBank: "",
-    id: "",
-    ngayvao: "",
-    idnew: "",
-    picture: "",
-    pictureTwo: "",
-  });
 
-  const editstaff = async () => {
-    setSelectedOption("");
-    const check = await HandleEditStaff(EditStaffForm);
-    await fetchingGettAllStaft_by_branchID(statechinhanh);
-
-    if (check.data.success) {
-      alert("Update Success");
-      await HandleUpload(
-        "STAFF",
-        stateimageEdit,
-        statechinhanh,
-        stateimageFileNameEdit
-      );
-      await HandleUpload(
-        "STAFF",
-        stateimageTwoEdit,
-        statechinhanh,
-        stateimageTwoFileNameEdit
-      );
-    }
-    setSelectionModel([]);
-    setStateimgEdit("");
-    setStateimgTwoEdit("");
-    setIschecked(false);
-    document.getElementById("choserole").selectedIndex = 0;
-  };
-
-  const onChangeStaffForm = (event) => {
-    setisError(false);
-
-    setAddStaffForm({
-      ...addStaffForm,
-      [event.target.name]: event.target.value,
-      branchID: statechinhanh,
-    });
-    if (event.target.name === "Role") {
-      setSelectedOption(event.target.value);
-    }
-  };
-
-  const onChangeEditStaffForm = (event) => {
-    setEditStaffForm({
-      ...EditStaffForm,
-      [event.target.name]: event.target.value,
-    });
-    if (event.target.name === "Role") {
-      setSelectedOption(event.target.value);
-    }
-  };
-
-  const handleResetSelect = () => {
-    setSelectedOption(""); // Đặt lại giá trị của select về giá trị mặc định
-  };
 
   return (
     <Box m="20px">
@@ -1316,6 +1241,8 @@ const Team = () => {
           </Box>
         </Box>
       </Box>
+
+
       <Box height="75vh" className={classes.datagrid}>
         <DataGrid
           zIndex={10}
