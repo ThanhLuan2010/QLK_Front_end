@@ -336,7 +336,7 @@ const EmployeeDetailModal = ({
     try {
       const start = startOfMonth(currentMonth);
       const end = endOfMonth(currentMonth);
-      console.log("=====employee====",employee)
+      console.log("=====employee====", employee);
       if (employee) {
         const res = await Get_TIMEKEEPING_By_StaffID(
           statechinhanh,
@@ -344,7 +344,7 @@ const EmployeeDetailModal = ({
           end,
           employee.id
         );
-        console.log("=====res===",res)
+        console.log("=====res===", res);
         if (res && res.length > 0) {
           setTimekeepingData(res);
           const formattedData = res.map((item) => ({
@@ -361,7 +361,7 @@ const EmployeeDetailModal = ({
         }
       }
     } catch (error) {
-      console.log("=====error===",error)
+      console.log("=====error===", error);
     } finally {
       setIsCalendarLoading(false); // Kết thúc trạng thái loading cho lịch
     }
@@ -606,7 +606,7 @@ const EmployeeDetailModal = ({
                   >
                     {i18n.t("Calendar")}
                   </Typography>
-                  <FormControlLabel
+                  {/* <FormControlLabel
                     control={
                       <Checkbox
                         sx={{
@@ -623,7 +623,7 @@ const EmployeeDetailModal = ({
                         {i18n.t("MultiTime")}
                       </Typography>
                     }
-                  />
+                  /> */}
                 </Box>
               </Box>
             </Box>
@@ -649,13 +649,13 @@ const EmployeeDetailModal = ({
                 <Box sx={{ opacity: isCalendarLoading ? 0.5 : 1 }}>
                   <Calendar
                     value={multiDay ? dateRange : selectedDate}
-                    selectRange={multiDay}
-                    onChange={(value) =>
-                      multiDay ? setDateRange(value) : setSelectedDate(value)
-                    }
-                    onClickDay={!multiDay ? handleDayClick : undefined}
                     tileContent={renderCalendarTileContent}
-                    onActiveStartDateChange={handleMonthChange}
+                    // selectRange={multiDay}
+                    // onChange={(value) =>
+                    //   multiDay ? setDateRange(value) : setSelectedDate(value)
+                    // }
+                    // onClickDay={!multiDay ? handleDayClick : undefined}
+                    // onActiveStartDateChange={handleMonthChange}
                   />
                 </Box>
               </Box>
@@ -703,22 +703,6 @@ const EmployeeDetailModal = ({
                 </Box>
               </Box>
             )}
-
-            <Button
-              variant="contained"
-              onClick={multiDay ? handleMultiDayUpdate : handleUpdateTime}
-              className={classes.button}
-              sx={{ mt: 2, borderRadius: "30px" }}
-              disabled={hasEmptyFields || isLoading}
-            >
-              {isLoading ? (
-                <CircularProgress color="inherit" size={24} />
-              ) : isSuccess ? (
-                <CheckIcon />
-              ) : (
-                <Typography color={"white"}>{i18n.t("SubmitTime")}</Typography>
-              )}
-            </Button>
           </Box>
         </Box>
       </Box>

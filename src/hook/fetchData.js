@@ -4,11 +4,8 @@ import Url_BackEnd from "../URL";
 import { firstValueFrom } from "rxjs";
 import { Method } from "../api/common";
 
-const useGetData = ({
-  url = "",
-  query,
-  pageSize = 10
-}) => {
+const useGetData = ({ url = "", queryParams, pageSize = 10, limit = 10 }) => {
+  console.log("🚀 ~ useGetData ~ url:", url);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -20,7 +17,7 @@ const useGetData = ({
 
     try {
       const response = await firstValueFrom(
-        Method.get(`${Url_BackEnd}${url}`)
+        Method.get(`${Url_BackEnd}${url}`, `page=${page}&limit=${limit}`)
       );
       setData(response);
     } catch (err) {
@@ -34,7 +31,7 @@ const useGetData = ({
     fetchData();
   }, [fetchData]);
 
-  return { data, loading, error };
+  return { data, loading, error, page, totalPages: response?.data?.totalPages };
 };
 
 export default useGetData;

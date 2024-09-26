@@ -52,12 +52,15 @@ import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined
 import { handleCheckExistId, handleGetDayTime } from "../../helper";
 import { ROLE_EMPLOYEE } from "../../utils/constant";
 import useGetData from "../../hook/fetchData";
+import { useAppDispatch } from "../../hook/reduxHooks";
+import { doGetBranchs, doSetBranch } from "../../store/slices/branchSlice";
 
 const Team = () => {
   useTranslation();
 
   // Lấy thông tin về ngày, giờ, phút, giây và milliseconds
   const { day, month, year } = handleGetDayTime();
+  const dispatch = useAppDispatch();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [isError, setisError] = useState(false);
@@ -818,8 +821,8 @@ const Team = () => {
                 const secondShiftRemainingMinutes = secondShiftMinutes % 60;
                 shift2[day - 1] =
                   (shift2[day - 1] || 0) +
-                  secondShiftHours +
-                  secondShiftRemainingMinutes / 60 || "";
+                    secondShiftHours +
+                    secondShiftRemainingMinutes / 60 || "";
               } else if (startHour >= 19) {
                 shift2[day - 1] =
                   (shift2[day - 1] || 0) + totalMinutesWorked / 60 || "";
@@ -942,31 +945,7 @@ const Team = () => {
 
   let checkaccess = false;
   let chinhanhdau = "";
-  // const fetchingBranch = async () => {
-  //   if (checkaccess || checkaccess === "true") {
-  //     const objBranch = Get_all_branch();
 
-  //     if (objBranch instanceof Promise) {
-  //       const resolvedResult = await objBranch;
-  //       setStateBranch(JSON.parse(resolvedResult));
-  //       chinhanhdau = JSON.parse(resolvedResult)[0].branchID;
-  //     } else {
-  //       setStateBranch(JSON.parse(objBranch));
-  //       chinhanhdau = JSON.parse(objBranch)[0].branchID;
-  //     }
-  //   } else {
-  //     const objBranch = Get_all_branch_By_userid();
-
-  //     if (objBranch instanceof Promise) {
-  //       const resolvedResult = await objBranch;
-  //       setStateBranch(JSON.parse(resolvedResult));
-  //       chinhanhdau = JSON.parse(resolvedResult)[0].branchID;
-  //     } else {
-  //       setStateBranch(JSON.parse(objBranch));
-  //       chinhanhdau = JSON.parse(objBranch)[0].branchID;
-  //     }
-  //   }
-  // };
   const fetchingTimekeep = async (branchId, createF, createT) => {
     setIsLoadingTimekeeping(true);
     const jsonfetch = {
@@ -990,7 +969,6 @@ const Team = () => {
   const checkAccess = async () => {
     const check = HandleAccessAccount();
     if (check instanceof Promise) {
-      // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await check;
 
       if (resolvedResult === "true" || resolvedResult) {
@@ -1034,11 +1012,19 @@ const Team = () => {
     // setStartDate(datetimeToday);
     // setEndDate(datetimeToday);
   };
-  const { data, loading } = useGetData({ url: '/Branch/admin/getallbranch/' })
+  const { data: dataBranch, loading } = useGetData({
+    url: "/Branch/admin/getallbranch/",
+  });
+  // console.log("🚀 ~ Team ~ dataBranch:", dataBranch);
+  useEffect(() => {
+    (async () => {
+      dispatch(doSetBranch(dataBranch?.All_Branch));
+    })();
+  }, [dataBranch]);
 
   const fetchingBranch = async () => {
     if (checkaccess || checkaccess === "true") {
-      const objBranch = data?.All_Branch;
+      const objBranch = dataBranch?.All_Branch;
       // console.log("🚀 ~ fetchingBranch ~ objBranch:", objBranch)
 
       setStateBranch(objBranch);
@@ -1090,9 +1076,6 @@ const Team = () => {
 
     fetchingapi();
   }, [loading]);
-
-
-
 
   return (
     <Box m="20px">
@@ -1263,7 +1246,6 @@ const Team = () => {
           </Box>
         </Box>
       </Box>
-
 
       <Box height="75vh" className={classes.datagrid}>
         <DataGrid

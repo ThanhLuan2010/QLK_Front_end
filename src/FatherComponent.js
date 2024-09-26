@@ -9,6 +9,8 @@ import { OrderProvider } from "./context/OrderContext";
 import { SidebarProvider } from "./context/SidebarContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { store } from "./store/store";
+import { Provider } from "react-redux";
 
 function Father({ children }) {
   const [theme, colorMode] = useMode();
@@ -57,19 +59,21 @@ function Father({ children }) {
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
-        <ToastContainer />
-        <CssBaseline />
-        <SidebarProvider>
-          <OrderProvider>
-            <div className="app">
-              <Sidebar isSidebar={isSidebar} />
-              <main className="content">
-                <Topbar setIsSidebar={setIsSidebar} />
-                {children}
-              </main>
-            </div>
-          </OrderProvider>
-        </SidebarProvider>
+        <Provider store={store}>
+          <ToastContainer />
+          <CssBaseline />
+          <SidebarProvider>
+            <OrderProvider>
+              <div className="app">
+                <Sidebar isSidebar={isSidebar} />
+                <main className="content">
+                  <Topbar setIsSidebar={setIsSidebar} />
+                  {children}
+                </main>
+              </div>
+            </OrderProvider>
+          </SidebarProvider>
+        </Provider>
       </ThemeProvider>
     </ColorModeContext.Provider>
   );
