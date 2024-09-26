@@ -17,35 +17,29 @@ import Header from "../../components/Header";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import { GridToolbar } from "@mui/x-data-grid";
 import React from "react";
-import { HandleUpload } from "../sendfileFTP/sendfileFTP";
 import { Get_all_TIMEKEEPING_By_DateF_DateT_branchID } from "./handleTimekeeps";
 import {
   Get_all_branch_By_userid,
   Get_all_User_By_branchID,
   Get_all_STAFFOFF_By_branchID,
-  Get_all_branch,
 } from "./handlebranch";
 import { confirmAlert } from "react-confirm-alert";
 
 import Loading from "react-loading";
 import "./style.css";
 import HandleAccessAccount from "../handleAccess/handleAccess";
-import { HandleCreateTimekeeps } from "./handleTimekeeps";
 import {
   HandleCreateStaff,
   HandleDeletedStaff,
-  HandleEditStaff,
   HandleCreateStaffOff,
   HandleDeletedStaffOff,
 } from "./handlestaff";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n/i18n";
-import URL_IMG from "../../URL_GETIMG";
 import { HandleEditTimekeeps } from "./handleTimekeeps";
 import EmployeeDetailModal from "../../components/EmployeeDetail/EmployeeDetailModal";
 import { endOfMonth, startOfMonth } from "date-fns";
-import EmployeeInfo from "../../components/EmployeeDetail/EmployeeInfo";
 import AddEmployeeModal from "../../components/EmployeeDetail/AddEmployeeModal";
 import CommonStyle from "../../components/CommonStyle";
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
@@ -53,7 +47,8 @@ import { handleCheckExistId, handleGetDayTime } from "../../helper";
 import { ROLE_EMPLOYEE } from "../../utils/constant";
 import useGetData from "../../hook/fetchData";
 import { useAppDispatch } from "../../hook/reduxHooks";
-import { doGetBranchs, doSetBranch } from "../../store/slices/branchSlice";
+import { doSetBranch } from "../../store/slices/branchSlice";
+import { LoadingSpinner } from "../../components/commons";
 
 const Team = () => {
   useTranslation();
@@ -1079,6 +1074,7 @@ const Team = () => {
 
   return (
     <Box m="20px">
+      {loading && <LoadingSpinner></LoadingSpinner>}
       <Header title={i18n.t("TITLETEAM")} subtitle={i18n.t("DESTEAM")} />
       <Box height={"100%"} width={"100%"} display={"flex"}>
         <Box

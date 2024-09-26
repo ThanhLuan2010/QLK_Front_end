@@ -38,6 +38,9 @@ import {
 } from "./handledashboard";
 import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import CommonStyle from "../../components/CommonStyle";
+import { useAppDispatch, useAppSelector } from "../../hook/reduxHooks";
+import { doSetIsLoading } from "../../store/slices/commonSlice";
+import { LoadingSpinner } from "../../components/commons";
 var socket = io(`${Url_realtime}`, {
   transports: ["websocket", "polling", "flashsocket"],
 });
@@ -67,6 +70,9 @@ const Dashboard = () => {
   const [mockdataNhapKho, setMockdataNhapKho] = useState([]);
   const [statesotienBAN, setstatesotienBAN] = useState(0);
   const textAreaRef = useRef();
+
+  const dispatch = useAppDispatch();
+  const { isLoading } = useAppSelector((state) => state.common);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -474,19 +480,22 @@ const Dashboard = () => {
     });
   };
   useEffect(() => {
+    dispatch(doSetIsLoading(true));
     fetchingapi();
-    // Lắng nghe sự kiện khi có sự thay đổi nội dung từ server
     socket.on("updateContent", (newContent) => {
       setTextAreaValue(newContent);
     });
+    setTimeout(() => {
+      dispatch(doSetIsLoading(false));
+    }, 1200);
 
     return () => {
-      // Đảm bảo rằng khi component bị unmounted, không còn lắng nghe sự kiện
       socket.off("updateContent");
     };
   }, []);
   return (
     <>
+      {isLoading && <LoadingSpinner />}
       {stateCheckaccess ? (
         <>
           {" "}
@@ -504,7 +513,6 @@ const Dashboard = () => {
       ) : (
         ""
       )}
-
       {stateCheckaccess ? (
         <Box m="20px">
           {/* HEADER */}
