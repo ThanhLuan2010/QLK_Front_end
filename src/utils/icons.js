@@ -8,6 +8,9 @@ import HistoryToggleOffIcon from "@mui/icons-material/HistoryToggleOff";
 // import SnoozeIcon from "@mui/icons-material/Snooze"; // total_overtime
 import AlarmOnIcon from "@mui/icons-material/AlarmOn";
 
+import TaskAltIcon from "@mui/icons-material/TaskAlt"; // overtime
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"; // time later
+
 export const icons = {
   AlarmAddIcon,
   HistoryIcon,
@@ -17,4 +20,6 @@ export const icons = {
   AlarmOffIcon,
   HistoryToggleOffIcon,
   AlarmOnIcon,
+  TaskAltIcon,
+  ErrorOutlineIcon,
 };

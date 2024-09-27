@@ -10,3 +10,12 @@ export { default as TableCustom } from "./table/TableCustom";
 
 // Pagination
 export { default as PaginationCustom } from "./pagination/PaginationCustom";
+
+// Model
+export { default as ModelCustom } from "./model-popup/ModelCustom";
+
+// Popover
+export { default as PopoverCustom } from "./popover/PopoverCustom";
+
+// Card
+export { default as CardCustom } from "./card/CardCustom";

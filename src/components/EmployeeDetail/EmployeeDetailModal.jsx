@@ -33,8 +33,20 @@ import { icons } from "../../utils/icons";
 import { convertToISODate, handleGetDayTime } from "../../helper";
 import useGetData from "../../hook/fetchData";
 import PayslipItem from "./PayslipItem";
-import { TableCustom } from "../commons";
+import {
+  CardCustom,
+  ModelCustom,
+  PopoverCustom,
+  TableCustom,
+} from "../commons";
 import ExcelJS from "exceljs";
+import { useAppDispatch, useAppSelector } from "../../hook/reduxHooks";
+import {
+  doSetDataModel,
+  doSetIsOpenModel,
+  doSetIsOpenPopover,
+} from "../../store/slices/commonSlice";
+import DetailTracking from "../commons/tracking/DetailTracking";
 
 const TITLE_PAYSLIP = [
   i18n.t("TOTAL_OVERTIME"),
@@ -66,6 +78,7 @@ const EmployeeDetailModal = ({
   onUpdateData,
 }) => {
   const theme = useTheme();
+  const dispatch = useAppDispatch();
   const classes = EmployeeDetail();
   const [selectedDate, setSelectedDate] = useState(null);
   const [multiDay, setMultiDay] = useState(false);
@@ -79,6 +92,7 @@ const EmployeeDetailModal = ({
   const modalRef = useRef(null);
   const [timekeepingData, setTimekeepingData] = useState([]);
   const [showEmployeeInfo, setShowEmployeeInfo] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const [EditStaffForm, setEditStaffForm] = useState({
     name: "",
     phone: "",
@@ -118,6 +132,11 @@ const EmployeeDetailModal = ({
     url: "/timekeep/get-payslip-by-staff",
     queryParams: `month=${month}&year=${year}&staffId=${employee?.id}`,
   });
+
+  const { isOpenModel, isOpenPopover } = useAppSelector(
+    (state) => state.common
+  );
+  console.log("🚀 ~ isOpenModel:", isOpenModel);
 
   useEffect(() => {
     if (employee) {
@@ -421,15 +440,23 @@ const EmployeeDetailModal = ({
         <Box>
           {dayData?.map((time, index) => (
             <Box key={index}>
-              <div style={{ fontWeight: "bold", color: "#E41395" }}>
+              <div
+                style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
+              >
                 {time?.times.checkIn}
               </div>
-              <div style={{ fontSize: 28, color: "gray" }}>-</div>
               <div
                 style={{
-                  fontWeight: "bold",
-                  color: "#E41395",
+                  fontSize: 20,
+                  color: "gray",
+                  marginTop: -10,
+                  marginBottom: -8,
                 }}
+              >
+                -
+              </div>
+              <div
+                style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
               >
                 {time?.times.checkOut ? time?.times.checkOut : "..."}
               </div>
@@ -582,209 +609,234 @@ const EmployeeDetailModal = ({
   };
   if (!employee) return null;
 
+  const handleOpenPopover = (event, value) => {
+    setAnchorEl(event.currentTarget);
+    dispatch(doSetIsOpenPopover(true));
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    dispatch(doSetIsOpenPopover(false));
+  };
+
+  console.log("employeeeeeeeee", employee);
+
   return (
-    <Modal open={open} onClose={handleModalClose}>
-      <Box
-        width={{ xs: "90%", md: showEmployeeInfo ? "70%" : "65%" }}
-        position={"absolute"}
-        ref={modalRef}
-        className={classes.modalBox}
-      >
+    <>
+      <PopoverCustom
+        isOpen={isOpenPopover}
+        anchorEl={anchorEl}
+        handleClose={handleClose}
+      ></PopoverCustom>
+      <Modal open={open} onClose={handleModalClose}>
         <Box
-          position="relative"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          width="100%"
-          flexDirection="column"
+          width={{ xs: "90%", md: showEmployeeInfo ? "70%" : "65%" }}
+          position={"absolute"}
+          ref={modalRef}
+          className={classes.modalBox}
         >
-          <Typography
-            fontWeight="bold"
-            gutterBottom
-            textTransform="uppercase"
-            textAlign="center"
-            my={4}
-            fontSize={"1.25rem"}
-          >
-            {i18n.t("Timekeep")}
-          </Typography>
-
-          <IconButton
-            onClick={onClose}
-            sx={{
-              color: "black",
-              border: "2px solid black",
-              position: "absolute",
-              right: 10,
-            }}
-            size="small"
-          >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        <Box display="flex" justifyContent="center">
-          <EmployeeInfo
-            employee={employee}
-            statechinhanh={statechinhanh}
-            handleSubmit={handleSubmit}
-            EditStaffForm={EditStaffForm}
-            setEditStaffForm={setEditStaffForm}
-            handleFileChange={handleFileChange}
-            setShowEmployeeInfo={setShowEmployeeInfo}
-            showEmployeeInfo={showEmployeeInfo}
-          />
-
           <Box
-            width={"100%"}
-            flexDirection="column"
-            overflow={"auto"}
-            height={"70vh"}
+            position="relative"
+            display="flex"
+            justifyContent="center"
             alignItems="center"
-            className="custom-scroll"
-            display={{ xs: showEmployeeInfo ? "none" : "flex", md: "flex" }}
+            width="100%"
+            flexDirection="column"
           >
-            <Box
-              display="flex"
-              flexDirection="row"
-              width={"100%"}
-              marginBottom={0.5}
-              paddingBottom={1}
-              alignItems="center"
-              justifyContent="space-between"
-              boxShadow={"0 5px 5px -5px  rgba(0, 0, 0, 0.2)"}
-              position={"relative"}
+            <Typography
+              fontWeight="bold"
+              gutterBottom
+              textTransform="uppercase"
+              textAlign="center"
+              my={4}
+              fontSize={"1.25rem"}
             >
-              {!showEmployeeInfo && (
-                <IconButton
-                  color="primary"
-                  size="small"
-                  position={"relative"}
-                  sx={{
-                    border: "2px solid #000000",
-                    color: "#000000",
-                    "&: hover": {
-                      backgroundColor: "#E0E0E0",
-                    },
-                    marginLeft: "20px",
-                  }}
-                  onClick={() => setShowEmployeeInfo(!showEmployeeInfo)}
-                >
-                  <ArrowForwardIos />
-                </IconButton>
-              )}
+              {i18n.t("Timekeep")}
+            </Typography>
+
+            <IconButton
+              onClick={onClose}
+              sx={{
+                color: "black",
+                border: "2px solid black",
+                position: "absolute",
+                right: 10,
+              }}
+              size="small"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Box>
+            <CardCustom
+              name={employee?.name}
+              id={employee?.id}
+              role={employee?.Role}
+              avatarUser={employee?.avatar}
+            ></CardCustom>
+          </Box>
+          <Box display="flex" justifyContent="center">
+            {/* <EmployeeInfo
+              employee={employee}
+              statechinhanh={statechinhanh}
+              handleSubmit={handleSubmit}
+              EditStaffForm={EditStaffForm}
+              setEditStaffForm={setEditStaffForm}
+              handleFileChange={handleFileChange}
+              setShowEmployeeInfo={setShowEmployeeInfo}
+              showEmployeeInfo={showEmployeeInfo}
+            /> */}
+
+            <Box
+              width={"100%"}
+              flexDirection="column"
+              overflow={"auto"}
+              height={"70vh"}
+              alignItems="center"
+              className="custom-scroll"
+              display={{ xs: showEmployeeInfo ? "none" : "flex", md: "flex" }}
+            >
               <Box
                 display="flex"
-                flex={1}
-                justifyContent="center"
-                alignItems="center"
-                marginLeft={"-30px"}
-              ></Box>
-            </Box>
-
-            <Box width={"100%"} paddingX={3}>
-              <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
-                <Backdrop
-                  sx={{
-                    color: "#fff",
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 1,
-                    borderRadius: 2,
-                    backgroundColor: "rgba(0,0,0,0.1)",
-                  }}
-                  open={isCalendarLoading}
-                >
-                  <CircularProgress color="inherit" />
-                </Backdrop>
-                <Box sx={{ opacity: isCalendarLoading ? 0.5 : 1 }}>
-                  <Calendar
-                    value={multiDay ? dateRange : selectedDate}
-                    tileContent={renderCalendarTileContent}
-                  />
-                </Box>
-              </Box>
-            </Box>
-            {(selectedDate || multiDay) && (
-              <Box
-                display={"flex"}
-                flexDirection={"column"}
+                flexDirection="row"
                 width={"100%"}
-                mt={2}
-                paddingX={3}
+                marginBottom={0.5}
+                paddingBottom={1}
+                alignItems="center"
+                justifyContent="space-between"
+                boxShadow={"0 5px 5px -5px  rgba(0, 0, 0, 0.2)"}
+                position={"relative"}
               >
-                {dailyTimes.length > 0 &&
-                  dailyTimes.map((time, index) => (
-                    <TimeKeepingLabel
-                      key={index}
-                      index={index}
-                      timeIn={time.checkIn}
-                      timeOut={
-                        time.checkOut === "24:00" ? "00:00" : time.checkOut
-                      }
-                      handleTimeChange={handleTimeChange}
-                      handleDelete={handleDeleteTimeSlot}
-                    />
-                  ))}
+                {/* {!showEmployeeInfo && (
+                  <IconButton
+                    color="primary"
+                    size="small"
+                    position={"relative"}
+                    sx={{
+                      border: "2px solid #000000",
+                      color: "#000000",
+                      "&: hover": {
+                        backgroundColor: "#E0E0E0",
+                      },
+                      marginLeft: "20px",
+                    }}
+                    onClick={() => setShowEmployeeInfo(!showEmployeeInfo)}
+                  >
+                    <ArrowForwardIos />
+                  </IconButton>
+                )} */}
 
                 <Box
-                  alignItems={"center"}
-                  justifyContent={"center"}
-                  display={"flex"}
-                  mt={2}
+                  display="flex"
+                  flex={1}
+                  justifyContent="center"
+                  alignItems="center"
+                  marginLeft={"-30px"}
+                ></Box>
+              </Box>
+
+              <Box width={"100%"} paddingX={3}>
+                <Box
+                  sx={{ position: "relative", width: "100%", height: "100%" }}
                 >
-                  <IconButton
-                    onClick={handleAddTimeSlot}
+                  <Backdrop
                     sx={{
-                      border: "2px solid #22C75B",
-                      color: "#22C75B",
-                      "&: hover": {
-                        backgroundColor: "#DEFFE9",
-                      },
+                      color: "#fff",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 1,
+                      borderRadius: 2,
+                      backgroundColor: "rgba(0,0,0,0.1)",
                     }}
+                    open={isCalendarLoading}
                   >
-                    <AddIcon fontSize="medium" />
-                  </IconButton>
+                    <CircularProgress color="inherit" />
+                  </Backdrop>
+                  <Box sx={{ opacity: isCalendarLoading ? 0.5 : 1 }}>
+                    <Calendar
+                      value={multiDay ? dateRange : selectedDate}
+                      tileContent={renderCalendarTileContent}
+                      onClickDay={(value, event) =>
+                        handleOpenPopover(event, value)
+                      }
+                    />
+                  </Box>
                 </Box>
               </Box>
-            )}
+              {(selectedDate || multiDay) && (
+                <Box
+                  display={"flex"}
+                  flexDirection={"column"}
+                  width={"100%"}
+                  mt={2}
+                  paddingX={3}
+                >
+                  {dailyTimes.length > 0 &&
+                    dailyTimes.map((time, index) => (
+                      <TimeKeepingLabel
+                        key={index}
+                        index={index}
+                        timeIn={time.checkIn}
+                        timeOut={
+                          time.checkOut === "24:00" ? "00:00" : time.checkOut
+                        }
+                        handleTimeChange={handleTimeChange}
+                        handleDelete={handleDeleteTimeSlot}
+                      />
+                    ))}
+
+                  <Box
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                    display={"flex"}
+                    mt={2}
+                  >
+                    <IconButton
+                      onClick={handleAddTimeSlot}
+                      sx={{
+                        border: "2px solid #22C75B",
+                        color: "#22C75B",
+                        "&: hover": {
+                          backgroundColor: "#DEFFE9",
+                        },
+                      }}
+                    >
+                      <AddIcon fontSize="medium" />
+                    </IconButton>
+                  </Box>
+                </Box>
+              )}
+            </Box>
+            <Box flexDirection={"column"}>
+              <Box
+                width={"100%"}
+                style={{ marginLeft: 40, marginTop: 56 }}
+                height={"100%"}
+              >
+                <PayslipItem data={data?.data}></PayslipItem>
+                <Button
+                  className={classes.button}
+                  onClick={handleExportDataToExcel}
+                  sx={{ mt: 2, borderRadius: "30px" }}
+                  variant="contained"
+                >
+                  {i18n.t("EXPORT")}
+                </Button>
+              </Box>
+              <Box>
+                <DetailTracking></DetailTracking>
+              </Box>
+            </Box>
           </Box>
-          <Box
-            width={"100%"}
-            style={{ marginLeft: 40, marginTop: 56 }}
-            height={"100%"}
-          >
-            {ICONS_PAYSLIP?.map((Icon, index) => {
-              return (
-                <PayslipItem
-                  key={index}
-                  icon={
-                    <Icon
-                      style={{ fontSize: "1.85rem", color: "#333333" }}
-                    ></Icon>
-                  }
-                  title={TITLE_PAYSLIP[index]}
-                  value={data?.data && data?.data[KEY_PAYSLIP[index]]}
-                ></PayslipItem>
-              );
-            })}
-            <Button
-              className={classes.button}
-              onClick={handleExportDataToExcel}
-              sx={{ mt: 2, borderRadius: "30px" }}
-              variant="contained"
-            >
-              {i18n.t("EXPORT")}
-            </Button>
-          </Box>
+          {/* <Box>
+            <TableCustom data={timekeepingData}></TableCustom>
+          </Box> */}
         </Box>
-        <Box>
-          <TableCustom data={timekeepingData}></TableCustom>
-        </Box>
-      </Box>
-    </Modal>
+      </Modal>
+    </>
   );
 };
 
