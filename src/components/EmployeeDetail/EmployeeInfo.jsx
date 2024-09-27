@@ -56,9 +56,7 @@ const EmployeeInfo = ({
     render.onload = () => {
       setCurrentImage(render.result);
     };
-    render.onerror = (error) => {
-      console.log("error" + error);
-    };
+    render.onerror = (error) => {};
     const file = e.target.files[0];
     try {
       const url = await HandleUpload(file, "STAFF", statechinhanh);

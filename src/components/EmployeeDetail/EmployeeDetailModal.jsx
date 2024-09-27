@@ -4,8 +4,6 @@ import {
   Button,
   Typography,
   Modal,
-  Checkbox,
-  FormControlLabel,
   IconButton,
   Backdrop,
   CircularProgress,
@@ -17,7 +15,6 @@ import "./style.css";
 import { format, isWithinInterval, startOfMonth, endOfMonth } from "date-fns";
 import "react-datepicker/dist/react-datepicker.css";
 import EmployeeDetail from "./EmployeeDetail";
-import CheckIcon from "@mui/icons-material/Check";
 import EmployeeInfo from "./EmployeeInfo";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -28,12 +25,38 @@ import {
   UpdateTimeKeeping,
   UpdateMultipleTimeKeeping,
 } from "../../scenes/team/handleTimekeeps";
-import CircleChecked from "@mui/icons-material/CheckCircle";
-import CircleUnchecked from "@mui/icons-material/RadioButtonUnchecked";
+import { saveAs } from "file-saver";
 import TimeKeepingLabel from "./TimeKeepingLabel";
 import { ArrowForwardIos } from "@mui/icons-material";
 import i18n from "../../i18n/i18n";
+import { icons } from "../../utils/icons";
+import { convertToISODate, handleGetDayTime } from "../../helper";
+import useGetData from "../../hook/fetchData";
+import PayslipItem from "./PayslipItem";
+import { TableCustom } from "../commons";
+import ExcelJS from "exceljs";
 
+const TITLE_PAYSLIP = [
+  i18n.t("TOTAL_OVERTIME"),
+  i18n.t("TOTAL_MINUTES_CHECKIN_LATER"),
+  i18n.t("TOTAL_MINUTES_MINUS"),
+  i18n.t("TOTAL_TIME"),
+  i18n.t("TOTAL_MINUTES_CHECKOUT_EARLY"),
+  i18n.t("TOTAL_TIME_CHECKIN_LATER"),
+  i18n.t("TOTAL_TIME_CHECKOUT_EARLY"),
+  i18n.t("TOTAL"),
+];
+
+const KEY_PAYSLIP = [
+  "total_overtime",
+  "total_minutes_checkin_late",
+  "total_minutes_fined",
+  "total_time",
+  "total_minutes_checkout_early",
+  "total_time_checkin_late",
+  "total_time_checkout_early",
+  "total",
+];
 const EmployeeDetailModal = ({
   open,
   onClose,
@@ -43,7 +66,6 @@ const EmployeeDetailModal = ({
   onUpdateData,
 }) => {
   const theme = useTheme();
-  const isMobile = theme.breakpoints.down("sm");
   const classes = EmployeeDetail();
   const [selectedDate, setSelectedDate] = useState(null);
   const [multiDay, setMultiDay] = useState(false);
@@ -69,6 +91,34 @@ const EmployeeDetailModal = ({
     pictureTwo: "",
   });
 
+  const {
+    AlarmAddIcon,
+    HistoryIcon,
+    AvTimerIcon,
+    AlarmIcon,
+    ScheduleIcon,
+    AlarmOffIcon,
+    HistoryToggleOffIcon,
+    AlarmOnIcon,
+  } = icons;
+
+  const ICONS_PAYSLIP = [
+    AlarmAddIcon,
+    HistoryIcon,
+    AvTimerIcon,
+    AlarmIcon,
+    ScheduleIcon,
+    AlarmOffIcon,
+    HistoryToggleOffIcon,
+    AlarmOnIcon,
+  ];
+
+  const { month, year } = handleGetDayTime();
+  const { data, loading } = useGetData({
+    url: "/timekeep/get-payslip-by-staff",
+    queryParams: `month=${month}&year=${year}&staffId=${employee?.id}`,
+  });
+
   useEffect(() => {
     if (employee) {
       setEditStaffForm({
@@ -86,29 +136,12 @@ const EmployeeDetailModal = ({
   }, [employee]);
 
   const handleSubmit = async () => {
-    console.log("EditStaffForm", EditStaffForm);
-
     await HandleEditStaff(EditStaffForm);
     alert("Cập nhật thành công!");
   };
 
   const handleFileChange = (e, setImageFile) => {
     setImageFile(e.target.files[0]);
-  };
-
-  const handleDayClick = (date) => {
-    setSelectedDate(date);
-    const dayData = monthData.find(
-      (d) => format(d.day, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
-    );
-    setDailyTimes(
-      dayData
-        ? dayData.times.map((time) => ({
-            checkIn: time.checkIn === "24:00" ? "00:00" : time.checkIn,
-            checkOut: time.checkOut === "24:00" ? "00:00" : time.checkOut,
-          }))
-        : [{ checkIn: "", checkOut: "" }]
-    );
   };
 
   const handleCreateTimeKeeping = async (
@@ -234,7 +267,7 @@ const EmployeeDetailModal = ({
 
           // Cập nhật monthData với dữ liệu mới
           const newDayData = {
-            day: new Date(response.timekeep.createDate),
+            day: convertToISODate(new Date(response.timekeep.createDate)),
             times: dailyTimes,
           };
           setMonthData((prevData) => [...prevData, newDayData]);
@@ -253,8 +286,6 @@ const EmployeeDetailModal = ({
           timeEnd,
           format(formattedDate, "yyyy-MM-dd")
         );
-
-        // Cập nhật monthData với dữ liệu đã cập nhật
         const updatedData = monthData.map((d) =>
           format(d.day, "yyyy-MM-dd") === selectedDateFormatted
             ? { ...d, times: dailyTimes }
@@ -334,36 +365,28 @@ const EmployeeDetailModal = ({
   const fetchTimekeepingData = async () => {
     setIsCalendarLoading(true);
     try {
-      const start = startOfMonth(currentMonth);
-      const end = endOfMonth(currentMonth);
-      console.log("=====employee====", employee);
+      const start = convertToISODate(startOfMonth(currentMonth));
+      const end = convertToISODate(endOfMonth(currentMonth));
       if (employee) {
-        const res = await Get_TIMEKEEPING_By_StaffID(
-          statechinhanh,
-          start,
-          end,
-          employee.id
-        );
-        console.log("=====res===", res);
+        const res = await Get_TIMEKEEPING_By_StaffID(start, end, employee.id);
         if (res && res.length > 0) {
           setTimekeepingData(res);
           const formattedData = res.map((item) => ({
-            day: new Date(item.createDate),
-            times: item.startCheck.map((checkIn, index) => ({
-              checkIn,
-              checkOut: item.endCheck[index],
-            })),
+            day: convertToISODate(new Date(item.createDate)),
+            times: {
+              checkIn: item?.startCheck,
+              checkOut: item?.endCheck,
+            },
           }));
           setMonthData(formattedData);
         } else {
-          setTimekeepingData([]); // Reset timekeeping data
-          setMonthData([]); // Reset month data
+          setTimekeepingData([]);
+          setMonthData([]);
         }
       }
     } catch (error) {
-      console.log("=====error===", error);
     } finally {
-      setIsCalendarLoading(false); // Kết thúc trạng thái loading cho lịch
+      setIsCalendarLoading(false);
     }
   };
 
@@ -373,6 +396,7 @@ const EmployeeDetailModal = ({
       fetchTimekeepingData();
     }
   }, [employee, employee, currentMonth, statechinhanh]);
+
   useEffect(() => {
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -386,17 +410,29 @@ const EmployeeDetailModal = ({
 
   const renderCalendarTileContent = ({ date, view }) => {
     if (view === "month") {
-      const dayData = monthData.find(
-        (d) => format(d.day, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
-      );
+      const dayData = monthData.filter((d) => {
+        const isTrue =
+          new Date(d.day).getTime() ==
+          new Date(convertToISODate(date)).getTime();
+        return isTrue;
+      });
 
       return (
         <Box>
-          {dayData?.times.map((time, index) => (
+          {dayData?.map((time, index) => (
             <Box key={index}>
-              <Box>
-                {time.checkIn} - {time.checkOut}
-              </Box>
+              <div style={{ fontWeight: "bold", color: "#E41395" }}>
+                {time?.times.checkIn}
+              </div>
+              <div style={{ fontSize: 28, color: "gray" }}>-</div>
+              <div
+                style={{
+                  fontWeight: "bold",
+                  color: "#E41395",
+                }}
+              >
+                {time?.times.checkOut ? time?.times.checkOut : "..."}
+              </div>
             </Box>
           ))}
         </Box>
@@ -479,19 +515,77 @@ const EmployeeDetailModal = ({
     }
   }, [multiDay, dateRange, monthData]);
 
+  const handleExportDataToExcel = () => {
+    const sheetData = data?.data?.data?.map((item) => ({
+      staffid: item.staffid,
+      staffName: item.staffName,
+      branchID: item.branchID,
+      startCheck: item.startCheck,
+      endCheck: item.endCheck,
+      checkin_late: item.checkin_late,
+      checkout_early: item.checkout_early,
+      fined: item.fined,
+    }));
+
+    sheetData.push({
+      staffid: "",
+      staffName: "Tổng",
+      branchID: "",
+      startCheck: "",
+      endCheck: "",
+      checkin_late: data?.data.total_minutes_checkin_late,
+      checkout_early: data?.data.total_minutes_checkout_early,
+      fined: data.total_minutes_fined,
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
+
+    worksheet.columns = [
+      { header: "Mã nhân viên", key: "staffid", width: 35 },
+      { header: "Tên nhân viên", key: "staffName", width: 45 },
+      { header: "Chi nhánh", key: "branchID", width: 20 },
+      { header: "Giờ bắt đầu", key: "startCheck", width: 30 },
+      { header: "Giờ kết thúc", key: "endCheck", width: 30 },
+      { header: "Đi trễ (phút)", key: "checkin_late", width: 30 },
+      { header: "Về sớm (phút)", key: "checkout_early", width: 30 },
+      { header: "Bị phạt", key: "fined", width: 20 },
+    ];
+
+    sheetData.forEach((item) => {
+      worksheet.addRow(item);
+    });
+
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFFF00" },
+      };
+      cell.font = { bold: true };
+    });
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: "application/octet-stream" });
+      saveAs(blob, "tracking_data.xlsx");
+    });
+  };
+
   const handleMonthChange = ({ activeStartDate }) => {
     setCurrentMonth(activeStartDate);
   };
+
   const handleModalClose = () => {
     updateTimekeepingData();
     onUpdateData();
     onClose();
   };
   if (!employee) return null;
+
   return (
     <Modal open={open} onClose={handleModalClose}>
       <Box
-        width={{ xs: "90%", md: showEmployeeInfo ? "50%" : "40%" }}
+        width={{ xs: "90%", md: showEmployeeInfo ? "70%" : "65%" }}
         position={"absolute"}
         ref={modalRef}
         className={classes.modalBox}
@@ -505,8 +599,6 @@ const EmployeeDetailModal = ({
           flexDirection="column"
         >
           <Typography
-            // variant="h3"
-            // component="h2"
             fontWeight="bold"
             gutterBottom
             textTransform="uppercase"
@@ -530,12 +622,7 @@ const EmployeeDetailModal = ({
             <CloseIcon />
           </IconButton>
         </Box>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems={"center"}
-          mb={3}
-        >
+        <Box display="flex" justifyContent="center">
           <EmployeeInfo
             employee={employee}
             statechinhanh={statechinhanh}
@@ -591,41 +678,7 @@ const EmployeeDetailModal = ({
                 justifyContent="center"
                 alignItems="center"
                 marginLeft={"-30px"}
-              >
-                <Box
-                  display="flex"
-                  flexDirection="column"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <Typography
-                    variant="h6"
-                    fontWeight={"bold"}
-                    component="h2"
-                    align="center"
-                  >
-                    {i18n.t("Calendar")}
-                  </Typography>
-                  {/* <FormControlLabel
-                    control={
-                      <Checkbox
-                        sx={{
-                          color: "black",
-                        }}
-                        icon={<CircleUnchecked sx={{ color: "black" }} />}
-                        checkedIcon={<CircleChecked sx={{ color: "black" }} />}
-                        checked={multiDay}
-                        onChange={() => setMultiDay(!multiDay)}
-                      />
-                    }
-                    label={
-                      <Typography variant="body1" style={{ fontWeight: "600" }}>
-                        {i18n.t("MultiTime")}
-                      </Typography>
-                    }
-                  /> */}
-                </Box>
-              </Box>
+              ></Box>
             </Box>
 
             <Box width={"100%"} paddingX={3}>
@@ -650,12 +703,6 @@ const EmployeeDetailModal = ({
                   <Calendar
                     value={multiDay ? dateRange : selectedDate}
                     tileContent={renderCalendarTileContent}
-                    // selectRange={multiDay}
-                    // onChange={(value) =>
-                    //   multiDay ? setDateRange(value) : setSelectedDate(value)
-                    // }
-                    // onClickDay={!multiDay ? handleDayClick : undefined}
-                    // onActiveStartDateChange={handleMonthChange}
                   />
                 </Box>
               </Box>
@@ -704,6 +751,37 @@ const EmployeeDetailModal = ({
               </Box>
             )}
           </Box>
+          <Box
+            width={"100%"}
+            style={{ marginLeft: 40, marginTop: 56 }}
+            height={"100%"}
+          >
+            {ICONS_PAYSLIP?.map((Icon, index) => {
+              return (
+                <PayslipItem
+                  key={index}
+                  icon={
+                    <Icon
+                      style={{ fontSize: "1.85rem", color: "#333333" }}
+                    ></Icon>
+                  }
+                  title={TITLE_PAYSLIP[index]}
+                  value={data?.data && data?.data[KEY_PAYSLIP[index]]}
+                ></PayslipItem>
+              );
+            })}
+            <Button
+              className={classes.button}
+              onClick={handleExportDataToExcel}
+              sx={{ mt: 2, borderRadius: "30px" }}
+              variant="contained"
+            >
+              {i18n.t("EXPORT")}
+            </Button>
+          </Box>
+        </Box>
+        <Box>
+          <TableCustom data={timekeepingData}></TableCustom>
         </Box>
       </Box>
     </Modal>

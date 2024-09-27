@@ -1,16 +1,20 @@
 .react-calendar {
   width: 100% !important;
-  max-width: 600px !important;
-  min-width: 290px !important;
+  max-width: 720px !important;
+  min-width: 360px !important;
   padding: 10px;
   background-color: #fff !important;
   color: #222 !important;
   border-bottom-left-radius: 40px;
   border-bottom-right-radius: 40px;
   border-color: white !important;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2) !important;
+  /* box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2) !important; */
   font-family: Arial, Helvetica, sans-serif;
   line-height: 1.125em;
+  font-size: large;
+}
+.css-1an72xi {
+  box-shadow: none;
 }
 
 abbr[title] {
@@ -26,7 +30,6 @@ abbr[title] {
 
 .react-calendar__tile--now {
   background: #bfbfbf !important;
-  border-radius: 40px;
   font-weight: bold;
   color: #fff !important;
 }
@@ -55,6 +58,10 @@ abbr[title] {
   background: #1c1c1c !important;
   border-radius: 40px;
   color: white !important;
+}
+
+.MuiBox-root .css-1an72xi {
+  box-shadow: none;
 }
 
 .react-calendar--selectRange .react-calendar__tile--hover {
@@ -178,3 +185,64 @@ abbr[title] {
   background-color: #f8f8fa !important; /* Color of the scrollbar track */
   border-radius: 10px !important; /* Rounded corners */
 }
+
+/* .box-payslip {
+  margin-left: 100 !important;
+} */
+
+/* Tablet */
+@media only screen and (min-width: 46.25em) and (max-width: 63.9327em) {
+}
+
+/* Mobile */
+@media only screen and (max-width: 46.1875em) {
+}
+
+/* Tablet & Mobile */
+@media only screen and (max-width: 63.9327em) {
+  .css-gg4vpm {
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; */
+    align-items: center;
+  }
+
+  .MuiBox-root .css-gg4vpm {
+    display: flex;
+    flex-direction: column;
+
+    /* justify-content: center; */
+  }
+
+  .css-w0kdxw {
+    height: 32vh !important;
+  }
+}
+
+/* Payslip Item */
+.css-w0kdxw {
+  height: 52vh !important;
+}
+
+.left-item {
+  display: flex;
+  align-items: center;
+  font-size: medium;
+  color: "#808080";
+}
+
+.main-item {
+  display: flex;
+  align-items: center;
+}
+
+.right-item {
+  font-size: medium;
+  color: "#808080";
+  padding-left: 30;
+  font-weight: 800;
+}
+
+/* .main-right-item {
+  margin-left: 300;
+} */

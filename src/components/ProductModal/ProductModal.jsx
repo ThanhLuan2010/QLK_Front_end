@@ -108,7 +108,6 @@ const ProductModal = ({
   const handleImageUpload = async (e, setCurrentImage) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) {
-      console.log("No file selected");
       return;
     }
     setIsImageUploading(true);
@@ -117,9 +116,7 @@ const ProductModal = ({
     render.onload = () => {
       setCurrentImage(render.result);
     };
-    render.onerror = (error) => {
-      console.log("error" + error);
-    };
+    render.onerror = (error) => {};
     const file = e.target.files[0];
     try {
       const url = await HandleUpload(file, "STORE", statechinhanhdau);

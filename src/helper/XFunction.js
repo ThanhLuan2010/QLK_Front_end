@@ -28,6 +28,33 @@ export const convertToHHandMM = (params) => {
   return <span>{`${totalHours} giờ ${totalMinutes} phút`}</span>;
 };
 
+export const convertMinutes = (minutes) => {
+  if (minutes < 60) {
+    return minutes + " phút";
+  } else {
+    let hours = Math.floor(minutes / 60);
+    let remainingMinutes = minutes % 60;
+    return hours + " tiếng " + remainingMinutes + " phút";
+  }
+};
+
+export const convertToISODate = (dateString) => {
+  const date = new Date(dateString);
+
+  const isoString = date.toISOString();
+
+  return isoString;
+};
+
+export const convertISOToDateFormat = (isoString) => {
+  const date = new Date(isoString);
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 const blobToBase64 = (blob) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

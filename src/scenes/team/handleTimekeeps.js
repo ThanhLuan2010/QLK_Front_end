@@ -30,6 +30,21 @@ export const Get_all_TIMEKEEPING_By_DateF_DateT_branchID = async (req) => {
 };
 
 export const Get_TIMEKEEPING_By_StaffID = async (
+  createDateF,
+  createDateT,
+  staffId
+) => {
+  const response = await firstValueFrom(
+    Method.get(`${Url_BackEnd}/timekeep/getTimekeepByStaffId`, {
+      startDate: createDateF,
+      endDate: createDateT,
+      staffId: staffId,
+    })
+  );
+  return response?.data;
+};
+
+export const Get_TIMEKEEPING_By_StaffID_Fix = async (
   branchID,
   createDateF,
   createDateT,
@@ -43,8 +58,9 @@ export const Get_TIMEKEEPING_By_StaffID = async (
       staffId: staffId,
     })
   );
-  return response.all_Time;
+  return response?.data;
 };
+
 export const CreateTimeKeeping = async (
   staffid,
   branchID,

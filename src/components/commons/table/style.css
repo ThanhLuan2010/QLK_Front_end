@@ -1,0 +1,34 @@
+@media only screen and (max-width: 63.9327em) {
+  .main-table {
+    display: none;
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .main-table {
+    width: 100%;
+    max-width: 900px;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .main-table {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .item-table {
+    font-size: 14px;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .main-table {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .item-table {
+    font-size: 12px;
+  }
+}

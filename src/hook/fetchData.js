@@ -4,20 +4,27 @@ import Url_BackEnd from "../URL";
 import { firstValueFrom } from "rxjs";
 import { Method } from "../api/common";
 
-const useGetData = ({ url = "", queryParams, pageSize = 10, limit = 10 }) => {
+const useGetData = ({
+  url = "",
+  queryParams,
+  pageSize = 10,
+  limit = 10,
+  pageCurrent,
+}) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(1); // handle save in Redux
   const [totalPages, setTotalPages] = useState();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
       const response = await firstValueFrom(
-        Method.get(`${Url_BackEnd}${url}`, `page=${page}&limit=${limit}`)
+        Method.get(
+          `${Url_BackEnd}${url}`,
+          `${queryParams}&page=${pageCurrent}&limit=${limit}`
+        )
       );
       if (response?.data?.totalPages) setTotalPages(response?.data?.totalPages);
       setData(response);
@@ -26,13 +33,13 @@ const useGetData = ({ url = "", queryParams, pageSize = 10, limit = 10 }) => {
     } finally {
       setLoading(false);
     }
-  }, [url, page, pageSize]);
+  }, [url, pageCurrent, pageSize, queryParams]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, queryParams]);
 
-  return { data, loading, error, page, totalPages };
+  return { data, loading, error, pageCurrent, totalPages };
 };
 
 export default useGetData;

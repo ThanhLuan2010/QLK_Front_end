@@ -3,6 +3,7 @@
 
 // const Url_BackEnd = "http://phototimevn.com:8080";
 // const Url_BackEnd = "http://27.71.26.120:8080";
-const Url_BackEnd = "https://backendqtht.phototimevn.com";
+// const Url_BackEnd = "https://backendqtht.phototimevn.com";
+const Url_BackEnd = "https://luanbe.phototime.works";
 export default Url_BackEnd;
 // timekeep/getTimekeepByStaff?branchID

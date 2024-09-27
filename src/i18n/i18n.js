@@ -282,6 +282,19 @@ i18n.use(initReactI18next).init({
         Del: "Xóa",
         Img: "Hình ảnh",
         REMAIN: "Số lượng còn trong kho",
+
+        // statistical tracking
+        TOTAL_OVERTIME: "Thời gian OT: ",
+        TOTAL_MINUTES_CHECKIN_LATER: "Tổng thời gian đi trễ: ",
+        TOTAL_MINUTES_MINUS: "Thời gian bị trừ: ",
+        TOTAL_TIME: "Tổng thời gian: ",
+        TOTAL_MINUTES_CHECKOUT_EARLY: "Tổng số thời gian tan làm sớm: ",
+        TOTAL_TIME_CHECKIN_LATER: "Tổng thời gian vào ca trễ: ",
+        TOTAL_TIME_CHECKOUT_EARLY: "Tổng thời gian tan làm sớm: ",
+        TOTAL: "Tổng: ",
+
+        // Common
+        EXPORT: "Xuất dữ liệu",
       },
     },
     ko: {
@@ -560,6 +573,19 @@ i18n.use(initReactI18next).init({
         DetailProduct1: "제품 세부정보",
         Del: "삭제",
         Img: "이미지",
+
+        // statistical tracking
+        TOTAL_OVERTIME: "초과 근무 시간",
+        TOTAL_MINUTES_CHECKIN_LATER: "지각 시간 총 분",
+        TOTAL_MINUTES_MINUS: "초과 근무 시간",
+        TOTAL_TIME: "총 시간",
+        TOTAL_MINUTES_CHECKOUT_EARLY: "조기 퇴근 총 분",
+        TOTAL_TIME_CHECKIN_LATER: "지각 총 시간",
+        TOTAL_TIME_CHECKOUT_EARLY: "조기 퇴근 총 시간",
+        TOTAL: "총계",
+
+        // Common
+        EXPORT: "조기 퇴근 총 시간",
       },
     },
   },
