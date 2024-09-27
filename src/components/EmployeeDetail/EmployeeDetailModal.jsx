@@ -35,6 +35,7 @@ import useGetData from "../../hook/fetchData";
 import PayslipItem from "./PayslipItem";
 import {
   CardCustom,
+  ChartComponent,
   ModelCustom,
   PopoverCustom,
   TableCustom,
@@ -133,10 +134,11 @@ const EmployeeDetailModal = ({
     queryParams: `month=${month}&year=${year}&staffId=${employee?.id}`,
   });
 
+  console.log('data : ', data)
+
   const { isOpenModel, isOpenPopover } = useAppSelector(
     (state) => state.common
   );
-  console.log("🚀 ~ isOpenModel:", isOpenModel);
 
   useEffect(() => {
     if (employee) {
@@ -619,7 +621,6 @@ const EmployeeDetailModal = ({
     dispatch(doSetIsOpenPopover(false));
   };
 
-  console.log("employeeeeeeeee", employee);
 
   return (
     <>
@@ -630,7 +631,7 @@ const EmployeeDetailModal = ({
       ></PopoverCustom>
       <Modal open={open} onClose={handleModalClose}>
         <Box
-          width={{ xs: "90%", md: showEmployeeInfo ? "70%" : "65%" }}
+          width={{ xs: "100%", md: "85%" }}
           position={"absolute"}
           ref={modalRef}
           className={classes.modalBox}
@@ -658,7 +659,6 @@ const EmployeeDetailModal = ({
               onClick={onClose}
               sx={{
                 color: "black",
-                border: "2px solid black",
                 position: "absolute",
                 right: 10,
               }}
@@ -675,7 +675,7 @@ const EmployeeDetailModal = ({
               avatarUser={employee?.avatar}
             ></CardCustom>
           </Box>
-          <Box display="flex" justifyContent="center">
+          <Box height={"100%"} display="flex" justifyContent="center">
             {/* <EmployeeInfo
               employee={employee}
               statechinhanh={statechinhanh}
@@ -688,10 +688,9 @@ const EmployeeDetailModal = ({
             /> */}
 
             <Box
-              width={"100%"}
+              width={"50%"}
               flexDirection="column"
               overflow={"auto"}
-              height={"70vh"}
               alignItems="center"
               className="custom-scroll"
               display={{ xs: showEmployeeInfo ? "none" : "flex", md: "flex" }}
@@ -810,13 +809,14 @@ const EmployeeDetailModal = ({
                 </Box>
               )}
             </Box>
-            <Box flexDirection={"column"}>
+            <Box width={"50%"} flexDirection={"column"}>
               <Box
                 width={"100%"}
-                style={{ marginLeft: 40, marginTop: 56 }}
+                style={{ marginTop: 56 }}
                 height={"100%"}
               >
-                <PayslipItem data={data?.data}></PayslipItem>
+                <ChartComponent data={data?.data} />
+                {/* <PayslipItem data={data?.data}></PayslipItem> */}
                 <Button
                   className={classes.button}
                   onClick={handleExportDataToExcel}
@@ -826,8 +826,10 @@ const EmployeeDetailModal = ({
                   {i18n.t("EXPORT")}
                 </Button>
               </Box>
-              <Box>
-                <DetailTracking></DetailTracking>
+              <Box class="scroll-item-tracking">
+                {data?.data?.data?.map((item, index) => {
+                  return (<DetailTracking key={index} checkinLate={item?.checkin_late} fined={item?.fined} date={item?.createDate} timeCheckin={item?.startCheck} timeCheckout={item?.endCheck}></DetailTracking>)
+                })}
               </Box>
             </Box>
           </Box>

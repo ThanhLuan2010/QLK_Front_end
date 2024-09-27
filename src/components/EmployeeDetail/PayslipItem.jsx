@@ -4,7 +4,6 @@ import { convertMinutes } from "../../helper";
 import { icons } from "../../utils/icons";
 
 const PayslipItem = ({ data }) => {
-  console.log("🚀 ~ PayslipItem ~ data:", data);
   const { TaskAltIcon, ErrorOutlineIcon, AlarmOnIcon } = icons;
 
   return (
