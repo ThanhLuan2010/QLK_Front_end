@@ -15,7 +15,6 @@ import "./style.css";
 import { format, isWithinInterval, startOfMonth, endOfMonth } from "date-fns";
 import "react-datepicker/dist/react-datepicker.css";
 import EmployeeDetail from "./EmployeeDetail";
-import EmployeeInfo from "./EmployeeInfo";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import { HandleEditStaff } from "../../scenes/team/handlestaff";
@@ -27,27 +26,22 @@ import {
 } from "../../scenes/team/handleTimekeeps";
 import { saveAs } from "file-saver";
 import TimeKeepingLabel from "./TimeKeepingLabel";
-import { ArrowForwardIos } from "@mui/icons-material";
 import i18n from "../../i18n/i18n";
 import { icons } from "../../utils/icons";
-import { convertToISODate, handleGetDayTime } from "../../helper";
+import {
+  convertMinutes,
+  convertToISODate,
+  handleGetDayTime,
+} from "../../helper";
 import useGetData from "../../hook/fetchData";
 import PayslipItem from "./PayslipItem";
-import {
-  CardCustom,
-  ChartComponent,
-  ModelCustom,
-  PopoverCustom,
-  TableCustom,
-} from "../commons";
+import { CardCustom, PopoverCustom, TableCustom } from "../commons";
 import ExcelJS from "exceljs";
 import { useAppDispatch, useAppSelector } from "../../hook/reduxHooks";
 import {
-  doSetDataModel,
-  doSetIsOpenModel,
+  doSetDataInPopover,
   doSetIsOpenPopover,
 } from "../../store/slices/commonSlice";
-import DetailTracking from "../commons/tracking/DetailTracking";
 
 const TITLE_PAYSLIP = [
   i18n.t("TOTAL_OVERTIME"),
@@ -115,6 +109,7 @@ const EmployeeDetailModal = ({
     AlarmOffIcon,
     HistoryToggleOffIcon,
     AlarmOnIcon,
+    ArrowDownwardIcon,
   } = icons;
 
   const ICONS_PAYSLIP = [
@@ -133,8 +128,6 @@ const EmployeeDetailModal = ({
     url: "/timekeep/get-payslip-by-staff",
     queryParams: `month=${month}&year=${year}&staffId=${employee?.id}`,
   });
-
-  console.log('data : ', data)
 
   const { isOpenModel, isOpenPopover } = useAppSelector(
     (state) => state.common
@@ -439,32 +432,40 @@ const EmployeeDetailModal = ({
       });
 
       return (
-        <Box>
-          {dayData?.map((time, index) => (
-            <Box key={index}>
-              <div
-                style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
-              >
-                {time?.times.checkIn}
-              </div>
-              <div
-                style={{
-                  fontSize: 20,
-                  color: "gray",
-                  marginTop: -10,
-                  marginBottom: -8,
-                }}
-              >
-                -
-              </div>
-              <div
-                style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
-              >
-                {time?.times.checkOut ? time?.times.checkOut : "..."}
-              </div>
+        <>
+          {dayData?.length > 0 && (
+            <Box>
+              <Box>
+                <div
+                  style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
+                >
+                  {dayData[0]?.times.checkIn}
+                </div>
+                <div
+                  style={{
+                    fontSize: 20,
+                    color: "gray",
+                    marginTop: -10,
+                    marginBottom: -8,
+                  }}
+                >
+                  <ArrowDownwardIcon
+                    style={{
+                      fontSize: "0.8rem",
+                      color: "#E41395",
+                      marginBottom: 2,
+                    }}
+                  ></ArrowDownwardIcon>
+                </div>
+                <div
+                  style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
+                >
+                  {dayData[0]?.times.checkOut ? dayData[0]?.times.checkOut : ""}
+                </div>
+              </Box>
             </Box>
-          ))}
-        </Box>
+          )}
+        </>
       );
     }
     return null;
@@ -612,7 +613,16 @@ const EmployeeDetailModal = ({
   if (!employee) return null;
 
   const handleOpenPopover = (event, value) => {
+    const dayData = monthData.filter((d) => {
+      return (
+        new Date(d.day).getTime() ===
+        new Date(convertToISODate(value)).getTime()
+      );
+    });
+    dispatch(doSetDataInPopover(dayData));
+
     setAnchorEl(event.currentTarget);
+
     dispatch(doSetIsOpenPopover(true));
   };
 
@@ -621,7 +631,6 @@ const EmployeeDetailModal = ({
     dispatch(doSetIsOpenPopover(false));
   };
 
-
   return (
     <>
       <PopoverCustom
@@ -629,12 +638,16 @@ const EmployeeDetailModal = ({
         anchorEl={anchorEl}
         handleClose={handleClose}
       ></PopoverCustom>
-      <Modal open={open} onClose={handleModalClose}>
+      <Modal className="model-css" open={open} onClose={handleModalClose}>
         <Box
           width={{ xs: "100%", md: "85%" }}
+          height={{ md: "70%" }}
           position={"absolute"}
           ref={modalRef}
           className={classes.modalBox}
+          display="flex"
+          flexDirection="column"
+          alignItems="start"
         >
           <Box
             position="relative"
@@ -656,6 +669,7 @@ const EmployeeDetailModal = ({
             </Typography>
 
             <IconButton
+              className="icon-close-id"
               onClick={onClose}
               sx={{
                 color: "black",
@@ -667,7 +681,7 @@ const EmployeeDetailModal = ({
               <CloseIcon />
             </IconButton>
           </Box>
-          <Box>
+          <Box class="card-custom-id">
             <CardCustom
               name={employee?.name}
               id={employee?.id}
@@ -676,17 +690,6 @@ const EmployeeDetailModal = ({
             ></CardCustom>
           </Box>
           <Box height={"100%"} display="flex" justifyContent="center">
-            {/* <EmployeeInfo
-              employee={employee}
-              statechinhanh={statechinhanh}
-              handleSubmit={handleSubmit}
-              EditStaffForm={EditStaffForm}
-              setEditStaffForm={setEditStaffForm}
-              handleFileChange={handleFileChange}
-              setShowEmployeeInfo={setShowEmployeeInfo}
-              showEmployeeInfo={showEmployeeInfo}
-            /> */}
-
             <Box
               width={"50%"}
               flexDirection="column"
@@ -706,25 +709,6 @@ const EmployeeDetailModal = ({
                 boxShadow={"0 5px 5px -5px  rgba(0, 0, 0, 0.2)"}
                 position={"relative"}
               >
-                {/* {!showEmployeeInfo && (
-                  <IconButton
-                    color="primary"
-                    size="small"
-                    position={"relative"}
-                    sx={{
-                      border: "2px solid #000000",
-                      color: "#000000",
-                      "&: hover": {
-                        backgroundColor: "#E0E0E0",
-                      },
-                      marginLeft: "20px",
-                    }}
-                    onClick={() => setShowEmployeeInfo(!showEmployeeInfo)}
-                  >
-                    <ArrowForwardIos />
-                  </IconButton>
-                )} */}
-
                 <Box
                   display="flex"
                   flex={1}
@@ -810,13 +794,36 @@ const EmployeeDetailModal = ({
               )}
             </Box>
             <Box width={"50%"} flexDirection={"column"}>
-              <Box
-                width={"100%"}
-                style={{ marginTop: 56 }}
-                height={"100%"}
-              >
-                <ChartComponent data={data?.data} />
-                {/* <PayslipItem data={data?.data}></PayslipItem> */}
+              <Box width={"100%"} style={{ marginTop: 56 }} height={"100%"}>
+                {/* <ChartComponent data={data?.data} /> */}
+                <PayslipItem data={data?.data}></PayslipItem>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    marginTop: -8,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 18,
+                      color: "#000",
+                      fontWeight: "bolder",
+                    }}
+                  >
+                    {i18n.t("TOTAL")}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 18,
+                      color: "#000",
+                      fontWeight: "bolder",
+                    }}
+                  >
+                    {convertMinutes(data?.data?.total)}
+                  </span>
+                </div>
                 <Button
                   className={classes.button}
                   onClick={handleExportDataToExcel}
@@ -826,16 +833,27 @@ const EmployeeDetailModal = ({
                   {i18n.t("EXPORT")}
                 </Button>
               </Box>
-              <Box class="scroll-item-tracking">
-                {data?.data?.data?.map((item, index) => {
-                  return (<DetailTracking key={index} checkinLate={item?.checkin_late} fined={item?.fined} date={item?.createDate} timeCheckin={item?.startCheck} timeCheckout={item?.endCheck}></DetailTracking>)
-                })}
+              <Box class="">
+                {data?.data?.data?.length > 0 ? (
+                  <TableCustom data={data?.data?.data}></TableCustom>
+                ) : (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <img
+                      style={{ marginTop: 32 }}
+                      width={"44%"}
+                      src="https://nissan.navigation.com/static/WFS/Shop-Site/-/Shop/en_US/Product%20Not%20Found.png"
+                    ></img>
+                  </div>
+                )}
               </Box>
             </Box>
           </Box>
-          {/* <Box>
-            <TableCustom data={timekeepingData}></TableCustom>
-          </Box> */}
         </Box>
       </Modal>
     </>

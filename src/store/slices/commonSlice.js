@@ -5,6 +5,7 @@ const initialState = {
   isOpenModel: false,
   dataModel: undefined,
   isOpenPopover: false,
+  dataInPopover: undefined,
 };
 
 const commonSlice = createSlice({
@@ -26,6 +27,10 @@ const commonSlice = createSlice({
     doSetIsOpenPopover: (state, action) => {
       state.isOpenPopover = action.payload;
     },
+
+    doSetDataInPopover: (state, action) => {
+      state.dataInPopover = action.payload;
+    },
   },
 });
 
@@ -34,6 +39,7 @@ export const {
   doSetIsOpenModel,
   doSetDataModel,
   doSetIsOpenPopover,
+  doSetDataInPopover,
 } = commonSlice.actions;
 
 export default commonSlice.reducer;

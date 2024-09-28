@@ -9,10 +9,14 @@ import avatar from "../../../assets/avatar.png";
 export default function CardCustom({ name, id, role, avatarUser }) {
   return (
     <Card
-      style={{ backgroundColor: "white", boxShadow: "none" }}
+      style={{
+        backgroundColor: "white",
+        boxShadow: "none",
+      }}
       sx={{ maxWidth: 345 }}
     >
       <CardHeader
+        className="card-fdgsaz"
         style={{ color: "gray" }}
         color="#0000"
         avatar={

@@ -1,3 +1,5 @@
+import i18n from "../i18n/i18n";
+
 export const handleGetDayTime = (originalDateString) => {
   let today;
   if (originalDateString) today = new Date(originalDateString);
@@ -29,12 +31,20 @@ export const convertToHHandMM = (params) => {
 };
 
 export const convertMinutes = (minutes) => {
+  if (isNaN(minutes) || minutes === null || minutes === undefined) {
+    return "Đang cập nhập";
+  }
+
+  minutes = parseInt(minutes, 10);
+
   if (minutes < 60) {
-    return minutes + " phút";
+    return minutes + ` ${i18n.t("MINUS")}`;
   } else {
     let hours = Math.floor(minutes / 60);
     let remainingMinutes = minutes % 60;
-    return hours + " tiếng " + remainingMinutes + " phút";
+    return (
+      hours + ` ${i18n.t("HOURS")} ` + remainingMinutes + ` ${i18n.t("MINUS")} `
+    );
   }
 };
 

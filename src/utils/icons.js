@@ -10,6 +10,12 @@ import AlarmOnIcon from "@mui/icons-material/AlarmOn";
 
 import TaskAltIcon from "@mui/icons-material/TaskAlt"; // overtime
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"; // time later
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import DoneOutlineIcon from "@mui/icons-material/DoneOutline";
 
 export const icons = {
   AlarmAddIcon,
@@ -22,4 +28,9 @@ export const icons = {
   AlarmOnIcon,
   TaskAltIcon,
   ErrorOutlineIcon,
+  ArrowDownwardIcon,
+  ReportProblemIcon,
+  AccessTimeIcon,
+  RemoveCircleOutlineIcon,
+  DoneOutlineIcon,
 };

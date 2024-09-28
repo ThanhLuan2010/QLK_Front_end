@@ -285,16 +285,26 @@ i18n.use(initReactI18next).init({
 
         // statistical tracking
         TOTAL_OVERTIME: "Thời gian OT: ",
-        TOTAL_MINUTES_CHECKIN_LATER: "Tổng thời gian đi trễ: ",
-        TOTAL_MINUTES_MINUS: "Thời gian bị trừ: ",
-        TOTAL_TIME: "Tổng thời gian: ",
-        TOTAL_MINUTES_CHECKOUT_EARLY: "Tổng số thời gian tan làm sớm: ",
-        TOTAL_TIME_CHECKIN_LATER: "Tổng thời gian vào ca trễ: ",
-        TOTAL_TIME_CHECKOUT_EARLY: "Tổng thời gian tan làm sớm: ",
-        TOTAL: "Tổng: ",
+        TOTAL_MINUTES_CHECKIN_LATER: "Tổng số giờ đi trễ: ",
+        TOTAL_MINUTES_MINUS: "Tổng số giờ bị trừ: ",
+        TOTAL_TIME_PAYSLIP: "Số giờ theo ca làm: ",
+        TOTAL_TIME_CHECKIN_LATER: "Số lần đi trễ: ",
+        TOTAL_TIME_CHECKOUT_EARLY: "Số lần về sớm: ",
+        TOTAL: "Tổng cộng: ",
 
         // Common
         EXPORT: "Xuất dữ liệu",
+        MINUS: "phút",
+        HOURS: "giờ",
+        TOTAL_TIME: "lần",
+        NOT_DATA: "Chưa có dữ liệu",
+        SHIFT: "Ca",
+
+        // Table Employee
+        TABLE_DAY: "Ngày",
+        TABLE_CHECKIN: "Thời gian vào",
+        TABLE_CHECKOUT: "Thời gian ra",
+        TABLE_MINUS: "Bị trừ",
       },
     },
     ko: {
@@ -578,7 +588,7 @@ i18n.use(initReactI18next).init({
         TOTAL_OVERTIME: "초과 근무 시간",
         TOTAL_MINUTES_CHECKIN_LATER: "지각 시간 총 분",
         TOTAL_MINUTES_MINUS: "초과 근무 시간",
-        TOTAL_TIME: "총 시간",
+        TOTAL_TIME_PAYSLIP: "총 시간",
         TOTAL_MINUTES_CHECKOUT_EARLY: "조기 퇴근 총 분",
         TOTAL_TIME_CHECKIN_LATER: "지각 총 시간",
         TOTAL_TIME_CHECKOUT_EARLY: "조기 퇴근 총 시간",
@@ -586,6 +596,17 @@ i18n.use(initReactI18next).init({
 
         // Common
         EXPORT: "조기 퇴근 총 시간",
+        MINUS: "분",
+        HOURS: "시간",
+        TOTAL_TIME: "시간",
+        NOT_DATA: "사용 가능한 데이터가 없습니다",
+        SHIFT: "옮기다",
+
+        // Table Employee
+        TABLE_DAY: "낮",
+        TABLE_CHECKIN: "입장 시간",
+        TABLE_CHECKOUT: "타임아웃",
+        TABLE_MINUS: "공제됨",
       },
     },
   },

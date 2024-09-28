@@ -6,3 +6,20 @@
 .css-vi717o-MuiTypography-root {
   font-size: medium !important;
 }
+
+.css-8wfyb5-MuiPaper-root-MuiCard-root {
+  max-width: max-content !important;
+}
+
+.makeStyles-modalBox-10 {
+  align-items: start !important;
+}
+
+/* .css-185gdzj-MuiCardHeader-root {
+} */
+
+@media only screen and (max-width: 63.9327em) {
+  .card-fdgsaz {
+    font-size: small !important;
+  }
+}

@@ -19,6 +19,3 @@ export { default as PopoverCustom } from "./popover/PopoverCustom";
 
 // Card
 export { default as CardCustom } from "./card/CardCustom";
-
-// Chart
-export { default as ChartComponent } from "./chart/ChartComponent";

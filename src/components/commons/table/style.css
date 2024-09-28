@@ -1,3 +1,53 @@
+.table-container {
+  max-height: 200px;
+  overflow-y: scroll;
+  width: 100%;
+  display: block;
+  border-radius: 20px;
+}
+
+.table-container::-webkit-scrollbar {
+  display: none;
+}
+
+.table-container {
+  scrollbar-width: none;
+}
+
+.table-detail-tracking {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f1f1f1;
+  padding: 8px 12px;
+  text-align: center;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 8px 12px;
+  background-color: #fff;
+  border: none;
+  text-align: center;
+  vertical-align: middle;
+}
+
+tbody td span {
+  display: inline-block;
+  width: 3rem;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+}
+
 @media only screen and (max-width: 63.9327em) {
   .main-table {
     display: none;
