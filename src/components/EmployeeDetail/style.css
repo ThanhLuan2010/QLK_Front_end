@@ -1,16 +1,16 @@
 .react-calendar {
   width: 100% !important;
-  /* max-width: 720px !important;
-  min-width: 360px !important; */
-  padding: 10px;
+  padding: 4px;
   background-color: #fff !important;
   color: #222 !important;
   border-radius: 40px;
-  border-color: white !important;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2) !important;
+  /* border-color: white !important; */
+  border: 0px 0px 30px 10px rgba(0, 0, 0, 0.3) !important;
   font-family: Arial, Helvetica, sans-serif;
   line-height: 1.125em;
   font-size: large;
+  overflow: visible;
+  /* Đảm bảo bóng không bị cắt */
 }
 
 .MuiBox-root .css-uwwqev {
@@ -145,12 +145,8 @@ abbr[title] {
   border-bottom-right-radius: 40px;
 }
 
-.react-calendar__tile--rangeStart:not(
-    .react-calendar__tile--rangeEnd
-  ):enabled:hover,
-.react-calendar__tile--rangeStart:not(
-    .react-calendar__tile--rangeEnd
-  ):enabled:focus {
+.react-calendar__tile--rangeStart:not(.react-calendar__tile--rangeEnd):enabled:hover,
+.react-calendar__tile--rangeStart:not(.react-calendar__tile--rangeEnd):enabled:focus {
   background: #1c1c1c !important;
   border-top-left-radius: 40px;
   border-bottom-left-radius: 40px;
@@ -159,12 +155,8 @@ abbr[title] {
   color: white !important;
 }
 
-.react-calendar__tile--rangeEnd:not(
-    .react-calendar__tile--rangeStart
-  ):enabled:hover,
-.react-calendar__tile--rangeEnd:not(
-    .react-calendar__tile--rangeStart
-  ):enabled:focus {
+.react-calendar__tile--rangeEnd:not(.react-calendar__tile--rangeStart):enabled:hover,
+.react-calendar__tile--rangeEnd:not(.react-calendar__tile--rangeStart):enabled:focus {
   background: #1c1c1c !important;
   border-top-right-radius: 40px;
   border-bottom-right-radius: 40px;
@@ -211,91 +203,9 @@ abbr[title] {
 }
 
 /* Tablet */
-@media only screen and (min-width: 46.25em) and (max-width: 63.9327em) {
-  .makeStyles-modalBox-10 .MuiBox-root {
-    height: auto;
-  }
-
-  .css-1yqd3s6 {
-    width: 90%;
-  }
-
-  .css-1uzxatu {
-    width: "100%" !important;
-  }
-}
 
 /* Mobile */
-@media only screen and (max-width: 46.1875em) {
-  .css-iint9g {
-    margin-top: 48% !important;
-  }
 
-  /* main */
-  .css-1yqd3s6 {
-    height: max-content !important;
-    width: max-content !important;
-    padding-top: 0px !important;
-    display: flex;
-    flex-direction: row;
-    overflow-x: scroll;
-    /* scrollbar-width: none;
-    -ms-overflow-style: none; */
-  }
-
-  /* container full 3 box */
-  .MuiBox-root .css-1ylo9ev {
-    display: flex !important;
-    flex-direction: row !important;
-  }
-
-  /* Container full 2 box right */
-  .MuiBox-root .css-1stuxjx {
-    display: flex !important;
-    flex-direction: row !important;
-  }
-
-  /* Table button */
-  .table-container {
-  }
-
-  /* payslips */
-
-  .MuiBox-root .css-uwwqev {
-    margin-top: 100% !important;
-    padding-left: 6%;
-  }
-
-  .font-payslip-dsadvcxd {
-    font-size: smaller !important;
-    color: gray !important;
-  }
-
-  .css-uwwqev {
-  }
-
-  .css-uwwqev div {
-    display: flex !important;
-    /* flex-direction: column !important; */
-  }
-
-  .icon-rgtrv {
-    display: none !important;
-  }
-
-  .table-detail-tracking {
-    font-size: small;
-  }
-
-  .header-table-cvbna {
-    font-size: smaller !important;
-    font-weight: 600 !important;
-  }
-
-  .body-table-cdsana {
-    font-size: small !important;
-  }
-}
 
 .font-payslip-dsadvcxd {
   font-size: larger;
@@ -303,96 +213,6 @@ abbr[title] {
 }
 
 /* Tablet & Mobile */
-@media only screen and (max-width: 63.9327em) {
-  /* main */
-  .css-1yqd3s6 {
-    height: 85% !important;
-    width: 95% !important;
-    padding-top: 0px !important;
-    overflow-y: scroll;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  /* Header */
-
-  .css-iint9g {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    justify-content: center;
-    margin-top: 24% !important;
-  }
-
-  .icon-close-id {
-    height: 100% !important;
-    background-color: "red" !important;
-  }
-
-  /* ==== */
-
-  .MuiBox-root .css-uwwqev {
-    margin-top: 4% !important;
-    padding-left: 6%;
-  }
-
-  .css-1yqd3s6::-webkit-scrollbar {
-    display: none;
-  }
-
-  .css-1uzxatu {
-    width: 100% !important;
-  }
-
-  .css-1stuxjx {
-    width: 100% !important;
-  }
-
-  .MuiBox-root .css-1ylo9ev {
-    flex-direction: column !important;
-  }
-
-  .css-gg4vpm {
-    display: flex;
-    flex-direction: column;
-    /* justify-content: center; */
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-
-  .MuiBox-root .css-1l4w6pd {
-    display: flex;
-    flex-direction: column !important;
-    overflow-y: scroll !important;
-  }
-
-  .makeStyles-modalBox-26 .MuiBox-root .css-1a19dm4 {
-    overflow: scroll;
-  }
-
-  .css-sp8c2n {
-    height: 60vh !important;
-  }
-
-  .MuiBox-root .css-gg4vpm {
-    display: flex;
-    flex-direction: column;
-
-    /* justify-content: center; */
-  }
-
-  .css-w0kdxw {
-    height: 32vh !important;
-  }
-
-  /* Payslips */
-  .font-payslip-dsadvcxd {
-    font-size: medium !important;
-    color: gray;
-  }
-}
-
 /* Payslip Item */
 .css-w0kdxw {
   height: 52vh !important;

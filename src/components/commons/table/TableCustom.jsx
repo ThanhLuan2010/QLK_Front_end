@@ -11,14 +11,13 @@ import i18n from "../../../i18n/i18n";
 // ];
 
 const TableCustom = ({ data }) => {
-  console.log("🚀 ~ TableCustom ~ data:", data[4]?.endCheck?.length == 0);
   return (
     <>
       {data?.length > 0 && (
-        <div class="table-container">
+        <div className="table-container">
           <table class="table-detail-tracking">
             <thead>
-              <tr className="header-table-cvbna" style={{ fontSize: 16 }}>
+              <tr className="header-table-cvbna" style={{ fontSize: 16, color: "gray", fontWeight: "normal" }}>
                 <th>{i18n.t("TABLE_DAY")}</th>
                 <th>{i18n.t("TABLE_CHECKIN")}</th>
                 <th>{i18n.t("TABLE_CHECKOUT")}</th>

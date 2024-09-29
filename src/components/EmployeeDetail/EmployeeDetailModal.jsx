@@ -18,6 +18,7 @@ import EmployeeDetail from "./EmployeeDetail";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import { HandleEditStaff } from "../../scenes/team/handlestaff";
+import { toast } from "react-toastify";
 import {
   CreateTimeKeeping,
   Get_TIMEKEEPING_By_StaffID,
@@ -42,6 +43,7 @@ import {
   doSetDataInPopover,
   doSetIsOpenPopover,
 } from "../../store/slices/commonSlice";
+import PayslipList from "./PayslipList";
 
 const TITLE_PAYSLIP = [
   i18n.t("TOTAL_OVERTIME"),
@@ -129,7 +131,7 @@ const EmployeeDetailModal = ({
     queryParams: `month=${month}&year=${year}&staffId=${employee?.id}`,
   });
 
-  const { isOpenModel, isOpenPopover } = useAppSelector(
+  const { isOpenPopover } = useAppSelector(
     (state) => state.common
   );
 
@@ -557,6 +559,11 @@ const EmployeeDetailModal = ({
       fined: item.fined,
     }));
 
+    if (!sheetData) {
+      toast.warning('Không có dữ liểu để xuất')
+      return
+    }
+
     sheetData.push({
       staffid: "",
       staffName: "Tổng",
@@ -599,6 +606,8 @@ const EmployeeDetailModal = ({
       const blob = new Blob([buffer], { type: "application/octet-stream" });
       saveAs(blob, "tracking_data.xlsx");
     });
+
+    toast.success('Xuất dữ liệu chấm công thành công')
   };
 
   const handleMonthChange = ({ activeStartDate }) => {
@@ -638,17 +647,34 @@ const EmployeeDetailModal = ({
         anchorEl={anchorEl}
         handleClose={handleClose}
       ></PopoverCustom>
-      <Modal className="model-css" open={open} onClose={handleModalClose}>
+      <Modal sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+      }}
+        className="model-css" open={open} onClose={handleModalClose}>
         <Box
-          width={{ xs: "100%", md: "85%" }}
-          height={{ md: "70%" }}
-          position={"absolute"}
-          ref={modalRef}
-          className={classes.modalBox}
+          sx={{
+            width: { xs: "90%", sm: "90%", md: "85%", lg: "85%" },
+            height: { sm: "80%", md: "auto", lg: "auto" },
+            maxHeight: "90vh",
+            overflowY: 'auto',
+            '&::-webkit-scrollbar': { display: 'none' },
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none',
+            backgroundColor: 'white',
+            borderRadius: 8,
+            paddingLeft: { xs: 2, sm: 2, md: 4, lg: 4 },
+            paddingBottom: 4,
+            paddingRight: { xs: 2, sm: 2, md: 4, lg: 4 },
+          }}
           display="flex"
           flexDirection="column"
-          alignItems="start"
+          ref={modalRef}
         >
+
+          {/* Header Model */}
           <Box
             position="relative"
             display="flex"
@@ -662,6 +688,7 @@ const EmployeeDetailModal = ({
               gutterBottom
               textTransform="uppercase"
               textAlign="center"
+              color={"black"}
               my={4}
               fontSize={"1.25rem"}
             >
@@ -681,7 +708,9 @@ const EmployeeDetailModal = ({
               <CloseIcon />
             </IconButton>
           </Box>
-          <Box class="card-custom-id">
+
+          {/* Card User */}
+          <Box sx={{ zIndex: 1000, display: "block" }} class="card-custom-id">
             <CardCustom
               name={employee?.name}
               id={employee?.id}
@@ -689,36 +718,17 @@ const EmployeeDetailModal = ({
               avatarUser={employee?.avatar}
             ></CardCustom>
           </Box>
-          <Box height={"100%"} display="flex" justifyContent="center">
-            <Box
-              width={"50%"}
-              flexDirection="column"
-              overflow={"auto"}
-              alignItems="center"
-              className="custom-scroll"
-              display={{ xs: showEmployeeInfo ? "none" : "flex", md: "flex" }}
-            >
-              <Box
-                display="flex"
-                flexDirection="row"
-                width={"100%"}
-                marginBottom={0.5}
-                paddingBottom={1}
-                alignItems="center"
-                justifyContent="space-between"
-                boxShadow={"0 5px 5px -5px  rgba(0, 0, 0, 0.2)"}
-                position={"relative"}
-              >
-                <Box
-                  display="flex"
-                  flex={1}
-                  justifyContent="center"
-                  alignItems="center"
-                  marginLeft={"-30px"}
-                ></Box>
-              </Box>
 
-              <Box width={"100%"} paddingX={3}>
+          {/* Body Main */}
+          <Box sx={{ display: { sm: 'flex' }, flexDirection: { sm: 'column', md: 'row', lg: 'row' }, marginTop: { sm: 20, md: 0, lg: 0 } }} height={"100%"} display="flex" justifyContent="center">
+
+            {/* Calender */}
+            <Box
+              sx={{ width: { sm: "100%", md: "50%", lg: "50%" } }}
+            >
+              <Box sx={{ width: "100%" }} paddingX={3}>
+
+                {/* CALENDER */}
                 <Box
                   sx={{ position: "relative", width: "100%", height: "100%" }}
                 >
@@ -738,6 +748,7 @@ const EmployeeDetailModal = ({
                   >
                     <CircularProgress color="inherit" />
                   </Backdrop>
+                  {/* CALENDER MAIN */}
                   <Box sx={{ opacity: isCalendarLoading ? 0.5 : 1 }}>
                     <Calendar
                       value={multiDay ? dateRange : selectedDate}
@@ -793,37 +804,13 @@ const EmployeeDetailModal = ({
                 </Box>
               )}
             </Box>
-            <Box width={"50%"} flexDirection={"column"}>
+
+            {/* Payslips Left */}
+            <Box sx={{ width: { sm: "100%", md: "50%", lg: "50%" }, marginTop: { sm: "4%", xs: "4%", md: "0%", lg: "0%" } }} flexDirection={"column"}>
               <Box width={"100%"} style={{ marginTop: 56 }} height={"100%"}>
                 {/* <ChartComponent data={data?.data} /> */}
                 <PayslipItem data={data?.data}></PayslipItem>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    marginTop: -8,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 18,
-                      color: "#000",
-                      fontWeight: "bolder",
-                    }}
-                  >
-                    {i18n.t("TOTAL")}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 18,
-                      color: "#000",
-                      fontWeight: "bolder",
-                    }}
-                  >
-                    {convertMinutes(data?.data?.total)}
-                  </span>
-                </div>
+                <PayslipList data={data?.data}></PayslipList>
                 <Button
                   className={classes.button}
                   onClick={handleExportDataToExcel}
@@ -833,6 +820,8 @@ const EmployeeDetailModal = ({
                   {i18n.t("EXPORT")}
                 </Button>
               </Box>
+
+              {/* Table */}
               <Box class="">
                 {data?.data?.data?.length > 0 ? (
                   <TableCustom data={data?.data?.data}></TableCustom>
