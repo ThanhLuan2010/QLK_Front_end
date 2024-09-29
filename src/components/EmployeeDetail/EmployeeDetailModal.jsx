@@ -710,7 +710,7 @@ const EmployeeDetailModal = ({
           </Box>
 
           {/* Card User */}
-          <Box sx={{ zIndex: 1000, display: "block" }} class="card-custom-id">
+          <Box sx={{ zIndex: 1000, display: "block", marginTop: { xs: -8, sm: -4, md: 0, lg: 0 } }} class="card-custom-id">
             <CardCustom
               name={employee?.name}
               id={employee?.id}
@@ -720,7 +720,7 @@ const EmployeeDetailModal = ({
           </Box>
 
           {/* Body Main */}
-          <Box sx={{ display: { sm: 'flex' }, flexDirection: { sm: 'column', md: 'row', lg: 'row' }, marginTop: { sm: 20, md: 0, lg: 0 } }} height={"100%"} display="flex" justifyContent="center">
+          <Box sx={{ display: { sm: 'flex' }, flexDirection: { sm: 'column', md: 'row', lg: 'row' }, marginTop: { sm: 16, md: 0, lg: 0 } }} height={"100%"} display="flex" justifyContent="center">
 
             {/* Calender */}
             <Box
@@ -749,7 +749,7 @@ const EmployeeDetailModal = ({
                     <CircularProgress color="inherit" />
                   </Backdrop>
                   {/* CALENDER MAIN */}
-                  <Box sx={{ opacity: isCalendarLoading ? 0.5 : 1 }}>
+                  <Box sx={{ opacity: isCalendarLoading ? 0.5 : 1, fontSize: { xs: "10px", sm: "10px", md: "14px" } }}>
                     <Calendar
                       value={multiDay ? dateRange : selectedDate}
                       tileContent={renderCalendarTileContent}

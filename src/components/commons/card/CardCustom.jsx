@@ -13,14 +13,22 @@ export default function CardCustom({ name, id, role, avatarUser }) {
         backgroundColor: "white",
         boxShadow: "none",
       }}
-      sx={{ maxWidth: 345 }}
+      sx={{ width: "auto" }}
     >
       <CardHeader
         className="card-fdgsaz"
         style={{ color: "gray" }}
         color="#0000"
         avatar={
-          <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
+          <Avatar sx={{
+            bgcolor: red[500],
+            display: {
+              xs: "none",
+              sm: "none",
+              md: "flex",
+            },
+          }}
+            aria-label="recipe">
             <img
               width={"100%"}
               height={"100%"}
