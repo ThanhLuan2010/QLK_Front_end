@@ -131,9 +131,7 @@ const EmployeeDetailModal = ({
     queryParams: `month=${month}&year=${year}&staffId=${employee?.id}`,
   });
 
-  const { isOpenPopover } = useAppSelector(
-    (state) => state.common
-  );
+  const { isOpenPopover } = useAppSelector((state) => state.common);
 
   useEffect(() => {
     if (employee) {
@@ -560,8 +558,8 @@ const EmployeeDetailModal = ({
     }));
 
     if (!sheetData) {
-      toast.warning('Không có dữ liểu để xuất')
-      return
+      toast.warning("Không có dữ liểu để xuất");
+      return;
     }
 
     sheetData.push({
@@ -607,7 +605,7 @@ const EmployeeDetailModal = ({
       saveAs(blob, "tracking_data.xlsx");
     });
 
-    toast.success('Xuất dữ liệu chấm công thành công')
+    toast.success("Xuất dữ liệu chấm công thành công");
   };
 
   const handleMonthChange = ({ activeStartDate }) => {
@@ -647,23 +645,27 @@ const EmployeeDetailModal = ({
         anchorEl={anchorEl}
         handleClose={handleClose}
       ></PopoverCustom>
-      <Modal sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-      }}
-        className="model-css" open={open} onClose={handleModalClose}>
+      <Modal
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          overflow: "hidden",
+        }}
+        className="model-css"
+        open={open}
+        onClose={handleModalClose}
+      >
         <Box
           sx={{
             width: { xs: "90%", sm: "90%", md: "85%", lg: "85%" },
             height: { sm: "80%", md: "auto", lg: "auto" },
             maxHeight: "90vh",
-            overflowY: 'auto',
-            '&::-webkit-scrollbar': { display: 'none' },
-            msOverflowStyle: 'none',
-            scrollbarWidth: 'none',
-            backgroundColor: 'white',
+            overflowY: "auto",
+            "&::-webkit-scrollbar": { display: "none" },
+            msOverflowStyle: "none",
+            scrollbarWidth: "none",
+            backgroundColor: "white",
             borderRadius: 8,
             paddingLeft: { xs: 2, sm: 2, md: 4, lg: 4 },
             paddingBottom: 4,
@@ -673,7 +675,6 @@ const EmployeeDetailModal = ({
           flexDirection="column"
           ref={modalRef}
         >
-
           {/* Header Model */}
           <Box
             position="relative"
@@ -710,7 +711,14 @@ const EmployeeDetailModal = ({
           </Box>
 
           {/* Card User */}
-          <Box sx={{ zIndex: 1000, display: "block", marginTop: { xs: -8, sm: -4, md: 0, lg: 0 } }} class="card-custom-id">
+          <Box
+            sx={{
+              zIndex: 1000,
+              display: "block",
+              marginTop: { xs: -8, sm: -4, md: 0, lg: 0 },
+            }}
+            class="card-custom-id"
+          >
             <CardCustom
               name={employee?.name}
               id={employee?.id}
@@ -720,17 +728,27 @@ const EmployeeDetailModal = ({
           </Box>
 
           {/* Body Main */}
-          <Box sx={{ display: { sm: 'flex' }, flexDirection: { sm: 'column', md: 'row', lg: 'row' }, marginTop: { sm: 16, md: 0, lg: 0 } }} height={"100%"} display="flex" justifyContent="center">
-
+          <Box
+            sx={{
+              display: { sm: "flex" },
+              flexDirection: { sm: "column", md: "row", lg: "row" },
+              marginTop: { xs: 2, sm: 10, md: 0, lg: 0 },
+            }}
+            height={"100%"}
+            display="flex"
+            justifyContent="center"
+          >
             {/* Calender */}
-            <Box
-              sx={{ width: { sm: "100%", md: "50%", lg: "50%" } }}
-            >
+            <Box sx={{ width: { sm: "100%", md: "50%", lg: "50%" } }}>
               <Box sx={{ width: "100%" }} paddingX={3}>
-
                 {/* CALENDER */}
                 <Box
-                  sx={{ position: "relative", width: "100%", height: "100%" }}
+                  sx={{
+                    position: "relative",
+                    width: "100%",
+                    height: "100%",
+                    overflow: "hidden",
+                  }}
                 >
                   <Backdrop
                     sx={{
@@ -749,7 +767,13 @@ const EmployeeDetailModal = ({
                     <CircularProgress color="inherit" />
                   </Backdrop>
                   {/* CALENDER MAIN */}
-                  <Box sx={{ opacity: isCalendarLoading ? 0.5 : 1, fontSize: { xs: "10px", sm: "10px", md: "14px" } }}>
+                  <Box
+                    sx={{
+                      opacity: isCalendarLoading ? 0.5 : 1,
+                      fontSize: { xs: "10px", sm: "10px", md: "14px" },
+                      overflow: "hidden",
+                    }}
+                  >
                     <Calendar
                       value={multiDay ? dateRange : selectedDate}
                       tileContent={renderCalendarTileContent}
@@ -806,7 +830,13 @@ const EmployeeDetailModal = ({
             </Box>
 
             {/* Payslips Left */}
-            <Box sx={{ width: { sm: "100%", md: "50%", lg: "50%" }, marginTop: { sm: "4%", xs: "4%", md: "0%", lg: "0%" } }} flexDirection={"column"}>
+            <Box
+              sx={{
+                width: { sm: "100%", md: "50%", lg: "50%" },
+                marginTop: { sm: "4%", xs: "4%", md: "0%", lg: "0%" },
+              }}
+              flexDirection={"column"}
+            >
               <Box width={"100%"} style={{ marginTop: 56 }} height={"100%"}>
                 {/* <ChartComponent data={data?.data} /> */}
                 <PayslipItem data={data?.data}></PayslipItem>

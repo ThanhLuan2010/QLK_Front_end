@@ -9,8 +9,7 @@
   font-family: Arial, Helvetica, sans-serif;
   line-height: 1.125em;
   font-size: large;
-  overflow: visible;
-  /* Đảm bảo bóng không bị cắt */
+  overflow: hidden;
 }
 
 .MuiBox-root .css-uwwqev {
@@ -38,6 +37,7 @@ abbr[title] {
   background: #bfbfbf !important;
   font-weight: bold;
   color: #fff !important;
+  border-radius: 16px;
 }
 
 .react-calendar__tile--now:enabled:hover,
@@ -145,8 +145,12 @@ abbr[title] {
   border-bottom-right-radius: 40px;
 }
 
-.react-calendar__tile--rangeStart:not(.react-calendar__tile--rangeEnd):enabled:hover,
-.react-calendar__tile--rangeStart:not(.react-calendar__tile--rangeEnd):enabled:focus {
+.react-calendar__tile--rangeStart:not(
+    .react-calendar__tile--rangeEnd
+  ):enabled:hover,
+.react-calendar__tile--rangeStart:not(
+    .react-calendar__tile--rangeEnd
+  ):enabled:focus {
   background: #1c1c1c !important;
   border-top-left-radius: 40px;
   border-bottom-left-radius: 40px;
@@ -155,8 +159,12 @@ abbr[title] {
   color: white !important;
 }
 
-.react-calendar__tile--rangeEnd:not(.react-calendar__tile--rangeStart):enabled:hover,
-.react-calendar__tile--rangeEnd:not(.react-calendar__tile--rangeStart):enabled:focus {
+.react-calendar__tile--rangeEnd:not(
+    .react-calendar__tile--rangeStart
+  ):enabled:hover,
+.react-calendar__tile--rangeEnd:not(
+    .react-calendar__tile--rangeStart
+  ):enabled:focus {
   background: #1c1c1c !important;
   border-top-right-radius: 40px;
   border-bottom-right-radius: 40px;
@@ -205,7 +213,6 @@ abbr[title] {
 /* Tablet */
 
 /* Mobile */
-
 
 .font-payslip-dsadvcxd {
   font-size: larger;
