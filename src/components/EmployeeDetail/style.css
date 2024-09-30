@@ -37,7 +37,7 @@ abbr[title] {
   background: #bfbfbf !important;
   font-weight: bold;
   color: #fff !important;
-  border-radius: 16px;
+  /* border-radius: 16px; */
 }
 
 .react-calendar__tile--now:enabled:hover,
