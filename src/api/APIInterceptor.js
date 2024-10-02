@@ -12,7 +12,6 @@ const interceptor = () => {
       return result;
     },
     (error) => {
-      console.log(error);
       return Promise.reject(error);
     }
   );

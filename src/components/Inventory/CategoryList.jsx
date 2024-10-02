@@ -48,7 +48,6 @@ const CategoryList = ({
   const handleSelectionModelChange = (newSelection) => {
     const selectedRows = newSelection.map((id) => {
       const selectedRow = category.find((row) => row.id === id);
-      console.log({ selectedProducts, newSelection, selectedRow });
 
       const existingProduct = selectedProducts.find(
         (product) => product.id === id
@@ -81,13 +80,6 @@ const CategoryList = ({
     }).flat();
 
     onSelectionChange(allSelectedProducts);
-
-    console.log({
-      selectedProducts,
-      allSelectedProducts,
-      selectedRows,
-      selectedProductsByCategory,
-    });
   };
   const handleCategoryChange = (loai) => {
     setSelectedCategory(loai);

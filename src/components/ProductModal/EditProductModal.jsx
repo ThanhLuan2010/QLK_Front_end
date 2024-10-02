@@ -53,7 +53,6 @@ const EditProductModal = ({
   const handleImageUpload = async (e, setCurrentImage) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) {
-      console.log("No file selected");
       return;
     }
     setIsImageUploading(true);

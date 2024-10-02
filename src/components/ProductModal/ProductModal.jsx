@@ -108,7 +108,6 @@ const ProductModal = ({
   const handleImageUpload = async (e, setCurrentImage) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) {
-      console.log("No file selected");
       return;
     }
     setIsImageUploading(true);
@@ -117,9 +116,7 @@ const ProductModal = ({
     render.onload = () => {
       setCurrentImage(render.result);
     };
-    render.onerror = (error) => {
-      console.log("error" + error);
-    };
+    render.onerror = (error) => {};
     const file = e.target.files[0];
     try {
       const url = await HandleUpload(file, "STORE", statechinhanhdau);
@@ -158,7 +155,7 @@ const ProductModal = ({
   const handleChange = (e) => {
     const { name, value } = e.target;
     const arrayOfNumbers = stateProduct.map((obj) =>
-      parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+      parseInt(obj.id?.replace(/[^\d]/g, ""), 10)
     );
     let maxNumber = Math.max(...arrayOfNumbers);
     const result = 1 / 0;

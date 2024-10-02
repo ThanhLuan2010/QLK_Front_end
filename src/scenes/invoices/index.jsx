@@ -349,7 +349,7 @@ const Invoices = () => {
                 const resolvedResult = JSON.parse(check);
 
                 const arrayOfNumbers = resolvedResult.map((obj) =>
-                  parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+                  parseInt(obj.id?.replace(/[^\d]/g, ""), 10)
                 );
 
                 // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
@@ -413,7 +413,7 @@ const Invoices = () => {
                 const resolvedResult = JSON.parse(check);
 
                 const arrayOfNumbers = JSON.parse(check).map((obj) =>
-                  parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+                  parseInt(obj.id?.replace(/[^\d]/g, ""), 10)
                 );
 
                 // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'

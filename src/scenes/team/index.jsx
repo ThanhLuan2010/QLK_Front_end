@@ -11,48 +11,51 @@ import {
   useTheme,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import * as XLSX from "xlsx";
 import { tokens } from "../../theme";
 import ExcelJS from "exceljs";
 import Header from "../../components/Header";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import { GridToolbar } from "@mui/x-data-grid";
 import React from "react";
-import { HandleUpload, CheckFileName } from "../sendfileFTP/sendfileFTP";
 import { Get_all_TIMEKEEPING_By_DateF_DateT_branchID } from "./handleTimekeeps";
 import {
   Get_all_branch_By_userid,
   Get_all_User_By_branchID,
   Get_all_STAFFOFF_By_branchID,
-  Get_all_branch,
 } from "./handlebranch";
 import { confirmAlert } from "react-confirm-alert";
 
 import Loading from "react-loading";
 import "./style.css";
 import HandleAccessAccount from "../handleAccess/handleAccess";
-import { HandleCreateTimekeeps } from "./handleTimekeeps";
 import {
   HandleCreateStaff,
   HandleDeletedStaff,
-  HandleEditStaff,
   HandleCreateStaffOff,
   HandleDeletedStaffOff,
 } from "./handlestaff";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n/i18n";
-import URL_IMG from "../../URL_GETIMG";
 import { HandleEditTimekeeps } from "./handleTimekeeps";
 import EmployeeDetailModal from "../../components/EmployeeDetail/EmployeeDetailModal";
 import { endOfMonth, startOfMonth } from "date-fns";
-import EmployeeInfo from "../../components/EmployeeDetail/EmployeeInfo";
 import AddEmployeeModal from "../../components/EmployeeDetail/AddEmployeeModal";
 import CommonStyle from "../../components/CommonStyle";
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
+import { handleCheckExistId, handleGetDayTime } from "../../helper";
+import { ROLE_EMPLOYEE } from "../../utils/constant";
+import useGetData from "../../hook/fetchData";
+import { useAppDispatch } from "../../hook/reduxHooks";
+import { doSetBranch } from "../../store/slices/branchSlice";
+import { LoadingSpinner } from "../../components/commons";
 
 const Team = () => {
   useTranslation();
+
+  // Lấy thông tin về ngày, giờ, phút, giây và milliseconds
+  const { day, month, year } = handleGetDayTime();
+  const dispatch = useAppDispatch();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [isError, setisError] = useState(false);
@@ -73,17 +76,13 @@ const Team = () => {
   const [isLoadingTimekeeping, setIsLoadingTimekeeping] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const isXsScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const today = new Date();
-
-  // Lấy thông tin về ngày, giờ, phút, giây và milliseconds
-  const year = today.getFullYear();
-  const month = (today.getMonth() + 1).toString().padStart(2, "0"); // Tháng bắt đầu từ 0
-  const day = today.getDate().toString().padStart(2, "0");
+  const [selectedMonth, setSelectedMonth] = useState({
+    year,
+    month,
+  });
 
   // Tạo chuỗi datetime
   const datetimeToday = `${year}-${month}-${day}`;
-  const [currentDate, setCurrentDate] = useState(new Date());
   const [startDate, setStartDate] = useState(
     startOfMonth(new Date(datetimeToday))
   );
@@ -103,7 +102,6 @@ const Team = () => {
   };
 
   const handleRowDoubleClick = (params) => {
-    console.log("=====params===",params)
     setSelectedEmployee(params.row);
     setOpenModal(true);
   };
@@ -183,20 +181,19 @@ const Team = () => {
   const [stateStaff, setStateStaff] = useState([]);
   const [stateStaffOff, setStateStaffOff] = useState([]);
   const [statechinhanh, setStatechinhanh] = useState("");
-  const [selectionModel, setSelectionModel] = React.useState([]);
-  const [selectionModelTimeKeep, setSelectionModelTimeKeep] = React.useState(
-    []
-  );
-  const [selectionModelOff, setSelectionModelOff] = React.useState([]);
+  const [selectionModel, setSelectionModel] = useState([]);
+  const [selectionModelTimeKeep, setSelectionModelTimeKeep] = useState([]);
+  const [selectionModelOff, setSelectionModelOff] = useState([]);
   const [selectRowOff, setSelectRowOff] = useState([]);
-  const [selectedRow, setSelectedRow] = React.useState([]);
-  const [selectedRowTimekeeps, setSelectRowTimekeeps] = React.useState([]);
+  const [selectedRow, setSelectedRow] = useState([]);
+  const [selectedRowTimekeeps, setSelectRowTimekeeps] = useState([]);
   const classes = CommonStyle();
   useEffect(() => {
     if (statechinhanh) {
       fetchingGettAllStaft_by_branchID(statechinhanh);
     }
   }, [statechinhanh, isDataUpdated]);
+
   const handleSelectionModelChange = (newSelectionModel) => {
     const selectedRows = newSelectionModel.map((selectedId) =>
       stateStaff.find((row) => row.id === selectedId)
@@ -205,6 +202,7 @@ const Team = () => {
     setSelectedRow(selectedRows);
     setSelectionModel(newSelectionModel);
   };
+
   const showAlertHuy = async () => {
     if (selectionModelOff.length === 0) {
       alert("Hãy chọn dữ liệu xóa !!!!");
@@ -241,12 +239,10 @@ const Team = () => {
       ],
     });
   };
-  const kiemTraTonTaiId = (A, B) => {
-    return A.some((itemA) => B.some((itemB) => itemB.id === itemA.id));
-  };
+
   const undostaff = async () => {
     try {
-      if (kiemTraTonTaiId(stateStaff, selectRowOff)) {
+      if (handleCheckExistId(stateStaff, selectRowOff)) {
         alert(
           "Không thể khôi phục, vì nhân viên này hiện tại đã có trong hệ thống !!!!"
         );
@@ -267,6 +263,7 @@ const Team = () => {
       console.log(error);
     }
   };
+
   const handleSelectionModelChangeOff = (newSelectionModel) => {
     const selectedRows = newSelectionModel.map((selectedId) =>
       stateStaffOff.find((row) => row.id === selectedId)
@@ -276,30 +273,17 @@ const Team = () => {
 
     setSelectionModelOff(newSelectionModel);
   };
-  function converToHHandMM(params) {
-    const arrayObject = params.value;
-    const totalHours = Math.floor(arrayObject / (1000 * 60 * 60));
-    const totalMinutes = Math.floor(
-      (arrayObject % (1000 * 60 * 60)) / (1000 * 60)
-    );
-    return <span>{`${totalHours} giờ ${totalMinutes} phút`}</span>;
-  }
+
   function ChamCong(params) {
     const arrayObject = params.value;
     const originalDateString = arrayObject;
-    const originalDate = new Date(originalDateString);
+    const { day, minutes, hours, month, year } =
+      handleGetDayTime(originalDateString);
 
-    // Lấy thông tin về năm, tháng, ngày, giờ, phút, giây từ đối tượng Date
-    const year = originalDate.getFullYear();
-    const month = (originalDate.getMonth() + 1).toString().padStart(2, "0"); // Tháng bắt đầu từ 0
-    const day = originalDate.getDate().toString().padStart(2, "0");
-    const hours = originalDate.getHours().toString().padStart(2, "0");
-    const minutes = originalDate.getMinutes().toString().padStart(2, "0");
-
-    // Tạo chuỗi mới với định dạng "năm tháng ngày giờ phút giây"
     const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}`;
     return <span>{formattedDateString}</span>;
   }
+
   function GhiChu(params) {
     return (
       <>
@@ -317,30 +301,25 @@ const Team = () => {
       </>
     );
   }
+
   function UpdatedateObjectCell(params) {
     const arrayObject = params.value;
     const originalDateString = arrayObject;
-    const originalDate = new Date(originalDateString);
-
-    // Lấy thông tin về năm, tháng, ngày, giờ, phút, giây từ đối tượng Date
-    const year = originalDate.getFullYear();
-    const month = (originalDate.getMonth() + 1).toString().padStart(2, "0"); // Tháng bắt đầu từ 0
-    const day = originalDate.getDate().toString().padStart(2, "0");
-    const hours = originalDate.getHours().toString().padStart(2, "0");
-    const minutes = originalDate.getMinutes().toString().padStart(2, "0");
-    const seconds = originalDate.getSeconds().toString().padStart(2, "0");
+    const { seconds, minutes, hours, day, month, year } =
+      handleGetDayTime(originalDateString);
 
     // Tạo chuỗi mới với định dạng "năm tháng ngày giờ phút giây"
     const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     return <span>{formattedDateString}</span>;
   }
+
   function ImageRole(params) {
     let getvalue = params.value;
-    if (getvalue === "QL") {
+    if (getvalue === ROLE_EMPLOYEE.MANAGER.VALUE) {
       getvalue = "QUẢN LÝ TRƯỞNG";
-    } else if (getvalue === "PQL") {
+    } else if (getvalue === ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE) {
       getvalue = "PHÓ QUẢN LÝ";
-    } else if (getvalue === "NV") {
+    } else if (getvalue === ROLE_EMPLOYEE.STAFF.VALUE) {
       getvalue = "NHÂN VIÊN";
     }
     return (
@@ -349,6 +328,7 @@ const Team = () => {
       </>
     );
   }
+
   function ImageCell(params) {
     return (
       <>
@@ -368,9 +348,10 @@ const Team = () => {
   const clickdoublegetimg = (e) => {
     setstateViewimg(e.target.src);
   };
+
   const handleSaveClick = async () => {
     try {
-      if (kiemTraTonTaiId(stateStaffOff, selectedRow)) {
+      if (handleCheckExistId(stateStaffOff, selectedRow)) {
         alert("Xóa thất bại, nhân viên này đã từng bị xóa và đang tồn tại !!!");
         return;
       }
@@ -400,28 +381,7 @@ const Team = () => {
 
     // Thực hiện xử lý theo nhu cầu của bạn
   };
-  // Hàm để chuyển đổi URL hình ảnh sang base64
-  const loadImageAsBase64 = async (url) => {
-    const response = await fetch(url, { mode: "no-cors" });
-    const blob = await response.blob();
-    const base64 = await blobToBase64(blob);
-    // console.log("base64 " + base64);
-    return base64;
-  };
-  // Hàm chuyển đổi Blob sang base64
-  const blobToBase64 = (blob) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      console.log("blob " + blob);
-      reader.onloadend = () => resolve(reader.result); // Lấy phần base64 sau dấu phẩy
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  };
-  const [selectedMonth, setSelectedMonth] = useState({
-    year: new Date().getFullYear(),
-    month: new Date().getMonth() + 1,
-  });
+
   const fetchTimekeepingData = async () => {
     setIsLoadingTimekeeping(true);
     // Gọi API lấy dữ liệu chấm công
@@ -447,17 +407,6 @@ const Team = () => {
     const currentMonth = new Date().getMonth() + 1;
     setSelectedMonth({ year: currentYear, month: currentMonth });
   }, []);
-  // useEffect(() => {
-  //   console.log("statechinhanh " + statechinhanh);
-  //   // const { startDate, endDate } = getStartAndEndDatesOfMonth(
-  //   //   selectedMonth.year,
-  //   //   selectedMonth.month
-  //   // );
-
-  //   console.log("startDate " + startDate);
-  //   console.log("endDate " + endDate);
-  //   fetchTimekeepingData();
-  // }, [statechinhanh, startDate, endDate]);
 
   useEffect(() => {
     if (statechinhanh) {
@@ -617,12 +566,15 @@ const Team = () => {
             }
 
             let adjustedHours = totalHours + totalMinutes / 60;
-            if (staff.Role === "QL" && adjustedHours >= 10) {
+            if (
+              staff.Role === ROLE_EMPLOYEE.MANAGER.VALUE &&
+              adjustedHours >= 10
+            ) {
               adjustedHours -= 1;
             } else if (
-              staff.Role !== "NV" &&
-              staff.Role !== "QL" &&
-              staff.Role !== "PQL" &&
+              staff.Role !== ROLE_EMPLOYEE.STAFF.VALUE &&
+              staff.Role !== ROLE_EMPLOYEE.MANAGER.VALUE &&
+              staff.Role !== ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE &&
               adjustedHours >= 5
             ) {
               adjustedHours -= 1;
@@ -842,12 +794,15 @@ const Team = () => {
 
                 let adjustedHours =
                   firstShiftHours + firstShiftRemainingMinutes / 60;
-                if (staff.Role === "QL" && adjustedHours >= 10) {
+                if (
+                  staff.Role === ROLE_EMPLOYEE.MANAGER.VALUE &&
+                  adjustedHours >= 10
+                ) {
                   adjustedHours -= 1;
                 } else if (
-                  staff.Role !== "NV" &&
-                  staff.Role !== "QL" &&
-                  staff.Role !== "PQL" &&
+                  staff.Role !== ROLE_EMPLOYEE.STAFF.VALUE &&
+                  staff.Role !== ROLE_EMPLOYEE.MANAGER.VALUE &&
+                  staff.Role !== ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE &&
                   adjustedHours >= 5
                 ) {
                   adjustedHours -= 1;
@@ -868,12 +823,15 @@ const Team = () => {
                   (shift2[day - 1] || 0) + totalMinutesWorked / 60 || "";
               } else {
                 let adjustedHours = totalMinutesWorked / 60;
-                if (staff.Role === "QL" && adjustedHours >= 10) {
+                if (
+                  staff.Role === ROLE_EMPLOYEE.MANAGER.VALUE &&
+                  adjustedHours >= 10
+                ) {
                   adjustedHours -= 1;
                 } else if (
-                  staff.Role !== "NV" &&
-                  staff.Role !== "QL" &&
-                  staff.Role !== "PQL" &&
+                  staff.Role !== ROLE_EMPLOYEE.STAFF.VALUE &&
+                  staff.Role !== ROLE_EMPLOYEE.MANAGER.VALUE &&
+                  staff.Role !== ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE &&
                   adjustedHours >= 5
                 ) {
                   adjustedHours -= 1;
@@ -982,31 +940,7 @@ const Team = () => {
 
   let checkaccess = false;
   let chinhanhdau = "";
-  const fetchingBranch = async () => {
-    if (checkaccess || checkaccess === "true") {
-      const objBranch = Get_all_branch();
 
-      if (objBranch instanceof Promise) {
-        const resolvedResult = await objBranch;
-        setStateBranch(JSON.parse(resolvedResult));
-        chinhanhdau = JSON.parse(resolvedResult)[0].branchID;
-      } else {
-        setStateBranch(JSON.parse(objBranch));
-        chinhanhdau = JSON.parse(objBranch)[0].branchID;
-      }
-    } else {
-      const objBranch = Get_all_branch_By_userid();
-
-      if (objBranch instanceof Promise) {
-        const resolvedResult = await objBranch;
-        setStateBranch(JSON.parse(resolvedResult));
-        chinhanhdau = JSON.parse(resolvedResult)[0].branchID;
-      } else {
-        setStateBranch(JSON.parse(objBranch));
-        chinhanhdau = JSON.parse(objBranch)[0].branchID;
-      }
-    }
-  };
   const fetchingTimekeep = async (branchId, createF, createT) => {
     setIsLoadingTimekeeping(true);
     const jsonfetch = {
@@ -1030,7 +964,6 @@ const Team = () => {
   const checkAccess = async () => {
     const check = HandleAccessAccount();
     if (check instanceof Promise) {
-      // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await check;
 
       if (resolvedResult === "true" || resolvedResult) {
@@ -1049,7 +982,6 @@ const Team = () => {
 
   const fetchingGettAllStaft_by_branchID = async (x) => {
     const check = await Get_all_User_By_branchID(x);
-    console.log("====== check===",check)
     if (check instanceof Promise) {
       const resolvedResult = await check;
       setStateStaff(JSON.parse(resolvedResult));
@@ -1057,6 +989,7 @@ const Team = () => {
       setStateStaff(JSON.parse(check));
     }
   };
+
   const fetchingGettAllStaftOff_by_branchID = async (x) => {
     const check = await Get_all_STAFFOFF_By_branchID(x);
     if (check instanceof Promise) {
@@ -1073,6 +1006,36 @@ const Team = () => {
     await fetchingGettAllStaftOff_by_branchID(e.target.value);
     // setStartDate(datetimeToday);
     // setEndDate(datetimeToday);
+  };
+  const { data: dataBranch, loading } = useGetData({
+    url: "/Branch/admin/getallbranch/",
+  });
+  // console.log("🚀 ~ Team ~ dataBranch:", dataBranch);
+  useEffect(() => {
+    (async () => {
+      dispatch(doSetBranch(dataBranch?.All_Branch));
+    })();
+  }, [dataBranch]);
+
+  const fetchingBranch = async () => {
+    if (checkaccess || checkaccess === "true") {
+      const objBranch = dataBranch?.All_Branch;
+      // console.log("🚀 ~ fetchingBranch ~ objBranch:", objBranch)
+
+      setStateBranch(objBranch);
+      chinhanhdau = objBranch[0].branchID;
+    } else {
+      const objBranch = Get_all_branch_By_userid();
+
+      if (objBranch instanceof Promise) {
+        const resolvedResult = await objBranch;
+        setStateBranch(JSON.parse(resolvedResult));
+        chinhanhdau = JSON.parse(resolvedResult)[0].branchID;
+      } else {
+        setStateBranch(JSON.parse(objBranch));
+        chinhanhdau = JSON.parse(objBranch)[0].branchID;
+      }
+    }
   };
   useEffect(() => {
     const fetchingapi = async () => {
@@ -1092,7 +1055,6 @@ const Team = () => {
         await fetchData();
         setStatechinhanh(chinhanhdau);
 
-        // Thiết lập tháng hiện tại
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth() + 1;
         setSelectedMonth({ year: currentYear, month: currentMonth });
@@ -1108,175 +1070,11 @@ const Team = () => {
     };
 
     fetchingapi();
-  }, []);
-
-  const convertoBase64 = async (e) => {
-    const check = await CheckFileName(
-      e.target.files[0].name,
-      "STAFF",
-      statechinhanh
-    );
-    setStateimgFileName(check);
-    const render = new FileReader();
-    render.readAsDataURL(e.target.files[0]);
-    render.onload = () => {
-      setAddStaffForm({
-        ...addStaffForm,
-        picture: URL_IMG + `STAFF/${statechinhanh}/` + check,
-      });
-      setStateimg(render.result);
-    };
-    render.onerror = (error) => {
-      console.log("error" + error);
-    };
-  };
-
-  const convertoBase64PicTwo = async (e) => {
-    const check = await CheckFileName(
-      e.target.files[0].name,
-      "STAFF",
-      statechinhanh
-    );
-    setStateimgTwoFileName(check);
-
-    const render = new FileReader();
-    render.readAsDataURL(e.target.files[0]);
-    render.onload = () => {
-      setAddStaffForm({
-        ...addStaffForm,
-
-        pictureTwo: URL_IMG + `STAFF/${statechinhanh}/` + check,
-      });
-
-      setStateimgTwo(render.result);
-    };
-    render.onerror = (error) => {
-      console.log("error" + error);
-    };
-  };
-
-  const convertoBase64Edit = async (e) => {
-    const check = await CheckFileName(
-      e.target.files[0].name,
-      "STAFF",
-      statechinhanh
-    );
-    setStateimgFileNameEdit(check);
-
-    const render = new FileReader();
-    render.readAsDataURL(e.target.files[0]);
-    render.onload = () => {
-      setEditStaffForm({
-        ...EditStaffForm,
-
-        picture: URL_IMG + `STAFF/${statechinhanh}/` + check,
-      });
-      setStateimgEdit(render.result);
-    };
-    render.onerror = (error) => {
-      console.log("error" + error);
-    };
-  };
-
-  const convertoBase64PicTwoEdit = async (e) => {
-    const check = await CheckFileName(
-      e.target.files[0].name,
-      "STAFF",
-      statechinhanh
-    );
-    setStateimgTwoFileNameEdit(check);
-    const render = new FileReader();
-    render.readAsDataURL(e.target.files[0]);
-    render.onload = () => {
-      setEditStaffForm({
-        ...EditStaffForm,
-        pictureTwo: URL_IMG + `STAFF/${statechinhanh}/` + check,
-      });
-
-      setStateimgTwoEdit(render.result);
-    };
-    render.onerror = (error) => {
-      console.log("error" + error);
-    };
-  };
-  const [EditStaffForm, setEditStaffForm] = useState({
-    name: "",
-    phone: "",
-    Role: "",
-    branchID: "",
-    AccountBank: "",
-    id: "",
-    ngayvao: "",
-    idnew: "",
-    picture: "",
-    pictureTwo: "",
-  });
-  const editstaff = async () => {
-    setSelectedOption("");
-    const check = await HandleEditStaff(EditStaffForm);
-    await fetchingGettAllStaft_by_branchID(statechinhanh);
-
-    if (check.data.success) {
-      alert("Update Success");
-      await HandleUpload(
-        "STAFF",
-        stateimageEdit,
-        statechinhanh,
-        stateimageFileNameEdit
-      );
-      await HandleUpload(
-        "STAFF",
-        stateimageTwoEdit,
-        statechinhanh,
-        stateimageTwoFileNameEdit
-      );
-    }
-    setSelectionModel([]);
-    setStateimgEdit("");
-    setStateimgTwoEdit("");
-    setIschecked(false);
-    document.getElementById("choserole").selectedIndex = 0;
-  };
-
-  const [addStaffForm, setAddStaffForm] = useState({
-    name: "",
-    phone: "",
-    Role: "",
-    branchID: "",
-    id: "",
-    ngayvao: "",
-    AccountBank: "",
-    picture: "",
-    pictureTwo: "",
-  });
-  const onChangeStaffForm = (event) => {
-    setisError(false);
-
-    setAddStaffForm({
-      ...addStaffForm,
-      [event.target.name]: event.target.value,
-      branchID: statechinhanh,
-    });
-    if (event.target.name === "Role") {
-      setSelectedOption(event.target.value);
-    }
-  };
-
-  const onChangeEditStaffForm = (event) => {
-    setEditStaffForm({
-      ...EditStaffForm,
-      [event.target.name]: event.target.value,
-    });
-    if (event.target.name === "Role") {
-      setSelectedOption(event.target.value);
-    }
-  };
-  const handleResetSelect = () => {
-    setSelectedOption(""); // Đặt lại giá trị của select về giá trị mặc định
-  };
+  }, [loading]);
 
   return (
     <Box m="20px">
+      {loading && <LoadingSpinner></LoadingSpinner>}
       <Header title={i18n.t("TITLETEAM")} subtitle={i18n.t("DESTEAM")} />
       <Box height={"100%"} width={"100%"} display={"flex"}>
         <Box
@@ -1444,6 +1242,7 @@ const Team = () => {
           </Box>
         </Box>
       </Box>
+
       <Box height="75vh" className={classes.datagrid}>
         <DataGrid
           zIndex={10}
@@ -1457,7 +1256,7 @@ const Team = () => {
           pageSize={10}
           rows={stateStaff}
           columns={columns}
-          onRowDoubleClick={handleRowDoubleClick}
+          onRowClick={handleRowDoubleClick}
         />
         <EmployeeDetailModal
           open={openModal}

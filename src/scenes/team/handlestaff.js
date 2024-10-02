@@ -13,6 +13,7 @@ export const HandleCreateStaff = async (req) => {
       AccountBank: req.AccountBank,
       picture: req.picture,
       pictureTwo: req.pictureTwo,
+      bankName: req.bankName,
     })
   );
   return JSON.stringify(response);
@@ -56,7 +57,6 @@ export const HandleDeletedStaffOff = async (req) => {
 };
 
 export const HandleCreateStaffOff = async (req) => {
-
   const response = await firstValueFrom(
     Method.post(`${Url_BackEnd}/staffoff/create`, {
       id: req.id,

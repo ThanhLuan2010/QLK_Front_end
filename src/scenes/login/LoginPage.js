@@ -6,6 +6,9 @@ import { setLoggingIn } from "../../api/common";
 import backgroundImage from "../../assets/bg-login.png";
 import eyeOpen from "../../assets/eye.png";
 import eyeClosed from "../../assets/eye-off.png";
+import {
+  CircularProgress,
+} from "@mui/material";
 
 const Background = styled.div`
   background-image: url(${backgroundImage});
@@ -93,6 +96,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCheckboxChange = useCallback(() => {
     setShowPassword(!showPassword);
@@ -103,12 +107,15 @@ const Login = () => {
       event.preventDefault();
       setLoggingIn(true);
       try {
+        setIsLoading(true);
         const LoginData = await HandleLogin(loginForm);
         console.log("Login Success", LoginData.success);
         if (LoginData.success) {
+          setIsLoading(false);
           navigate("/");
         }
       } catch (error) {
+        setIsLoading(false);
         console.error("Login Error", error);
         alert("LOGIN FAIL!!!");
       }
@@ -164,7 +171,7 @@ const Login = () => {
             onClick={handleLogin}
             disabled={!loginForm.username || !loginForm.password}
           >
-            Login
+            {isLoading ? <CircularProgress size={24} /> : 'Login'}
           </Button>
         </LoginForm>
       </LoginContainer>
