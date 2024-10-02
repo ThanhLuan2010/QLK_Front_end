@@ -1,6 +1,6 @@
 import React from "react";
 import "./style.css";
-import { convertISOToDateFormat } from "../../../helper";
+import { convertISOToDateFormat, convertMinutes } from "../../../helper";
 import i18n from "../../../i18n/i18n";
 
 // const DATA_HEAD = [
@@ -17,7 +17,10 @@ const TableCustom = ({ data }) => {
         <div className="table-container">
           <table class="table-detail-tracking">
             <thead>
-              <tr className="header-table-cvbna" style={{ fontSize: 16, color: "gray", fontWeight: "normal" }}>
+              <tr
+                className="header-table-cvbna"
+                style={{ fontSize: 16, color: "gray", fontWeight: "normal" }}
+              >
                 <th>{i18n.t("TABLE_DAY")}</th>
                 <th>{i18n.t("TABLE_CHECKIN")}</th>
                 <th>{i18n.t("TABLE_CHECKOUT")}</th>
@@ -83,7 +86,9 @@ const TableCustom = ({ data }) => {
                     <td
                       className="body-table-cdsana"
                       style={{ color: "red" }}
-                    >{`${item?.fined ? `${item?.fined} Phút` : ""}`}</td>
+                    >{`${
+                      item?.fined ? `${convertMinutes(item?.fined)}` : ""
+                    }`}</td>
                   </tr>
                 ))}
             </tbody>
