@@ -10,6 +10,7 @@ export const HandleCreateStaff = async (req) => {
       Role: req.Role,
       branchID: req.branchID,
       ngayvao: req.ngayvao,
+      bankName: req.bankName,
     })
   );
 

@@ -4,8 +4,6 @@ import {
   Button,
   Typography,
   Modal,
-  Checkbox,
-  FormControlLabel,
   IconButton,
   Backdrop,
   CircularProgress,
@@ -17,23 +15,57 @@ import "./style.css";
 import { format, isWithinInterval, startOfMonth, endOfMonth } from "date-fns";
 import "react-datepicker/dist/react-datepicker.css";
 import EmployeeDetail from "./EmployeeDetail";
-import CheckIcon from "@mui/icons-material/Check";
-import EmployeeInfo from "./EmployeeInfo";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import { HandleEditStaff } from "../../scenes/team/handlestaff";
+import { toast } from "react-toastify";
 import {
   CreateTimeKeeping,
   Get_TIMEKEEPING_By_StaffID,
   UpdateTimeKeeping,
   UpdateMultipleTimeKeeping,
 } from "../../scenes/team/handleTimekeeps";
-import CircleChecked from "@mui/icons-material/CheckCircle";
-import CircleUnchecked from "@mui/icons-material/RadioButtonUnchecked";
+import { saveAs } from "file-saver";
 import TimeKeepingLabel from "./TimeKeepingLabel";
-import { ArrowForwardIos } from "@mui/icons-material";
 import i18n from "../../i18n/i18n";
+import { icons } from "../../utils/icons";
+import {
+  convertMinutes,
+  convertToISODate,
+  handleGetDayTime,
+} from "../../helper";
+import useGetData from "../../hook/fetchData";
+import PayslipItem from "./PayslipItem";
+import { CardCustom, PopoverCustom, TableCustom } from "../commons";
+import ExcelJS from "exceljs";
+import { useAppDispatch, useAppSelector } from "../../hook/reduxHooks";
+import {
+  doSetDataInPopover,
+  doSetIsOpenPopover,
+} from "../../store/slices/commonSlice";
+import PayslipList from "./PayslipList";
 
+const TITLE_PAYSLIP = [
+  i18n.t("TOTAL_OVERTIME"),
+  i18n.t("TOTAL_MINUTES_CHECKIN_LATER"),
+  i18n.t("TOTAL_MINUTES_MINUS"),
+  i18n.t("TOTAL_TIME"),
+  i18n.t("TOTAL_MINUTES_CHECKOUT_EARLY"),
+  i18n.t("TOTAL_TIME_CHECKIN_LATER"),
+  i18n.t("TOTAL_TIME_CHECKOUT_EARLY"),
+  i18n.t("TOTAL"),
+];
+
+const KEY_PAYSLIP = [
+  "total_overtime",
+  "total_minutes_checkin_late",
+  "total_minutes_fined",
+  "total_time",
+  "total_minutes_checkout_early",
+  "total_time_checkin_late",
+  "total_time_checkout_early",
+  "total",
+];
 const EmployeeDetailModal = ({
   open,
   onClose,
@@ -43,7 +75,7 @@ const EmployeeDetailModal = ({
   onUpdateData,
 }) => {
   const theme = useTheme();
-  const isMobile = theme.breakpoints.down("sm");
+  const dispatch = useAppDispatch();
   const classes = EmployeeDetail();
   const [selectedDate, setSelectedDate] = useState(null);
   const [multiDay, setMultiDay] = useState(false);
@@ -57,6 +89,7 @@ const EmployeeDetailModal = ({
   const modalRef = useRef(null);
   const [timekeepingData, setTimekeepingData] = useState([]);
   const [showEmployeeInfo, setShowEmployeeInfo] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const [EditStaffForm, setEditStaffForm] = useState({
     name: "",
     phone: "",
@@ -68,6 +101,37 @@ const EmployeeDetailModal = ({
     picture: "",
     pictureTwo: "",
   });
+
+  const {
+    AlarmAddIcon,
+    HistoryIcon,
+    AvTimerIcon,
+    AlarmIcon,
+    ScheduleIcon,
+    AlarmOffIcon,
+    HistoryToggleOffIcon,
+    AlarmOnIcon,
+    ArrowDownwardIcon,
+  } = icons;
+
+  const ICONS_PAYSLIP = [
+    AlarmAddIcon,
+    HistoryIcon,
+    AvTimerIcon,
+    AlarmIcon,
+    ScheduleIcon,
+    AlarmOffIcon,
+    HistoryToggleOffIcon,
+    AlarmOnIcon,
+  ];
+
+  const { month, year } = handleGetDayTime();
+  const { data, loading } = useGetData({
+    url: "/timekeep/get-payslip-by-staff",
+    queryParams: `month=${month}&year=${year}&staffId=${employee?.id}`,
+  });
+
+  const { isOpenPopover } = useAppSelector((state) => state.common);
 
   useEffect(() => {
     if (employee) {
@@ -86,29 +150,12 @@ const EmployeeDetailModal = ({
   }, [employee]);
 
   const handleSubmit = async () => {
-    console.log("EditStaffForm", EditStaffForm);
-
     await HandleEditStaff(EditStaffForm);
     alert("Cập nhật thành công!");
   };
 
   const handleFileChange = (e, setImageFile) => {
     setImageFile(e.target.files[0]);
-  };
-
-  const handleDayClick = (date) => {
-    setSelectedDate(date);
-    const dayData = monthData.find(
-      (d) => format(d.day, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
-    );
-    setDailyTimes(
-      dayData
-        ? dayData.times.map((time) => ({
-            checkIn: time.checkIn === "24:00" ? "00:00" : time.checkIn,
-            checkOut: time.checkOut === "24:00" ? "00:00" : time.checkOut,
-          }))
-        : [{ checkIn: "", checkOut: "" }]
-    );
   };
 
   const handleCreateTimeKeeping = async (
@@ -234,7 +281,7 @@ const EmployeeDetailModal = ({
 
           // Cập nhật monthData với dữ liệu mới
           const newDayData = {
-            day: new Date(response.timekeep.createDate),
+            day: convertToISODate(new Date(response.timekeep.createDate)),
             times: dailyTimes,
           };
           setMonthData((prevData) => [...prevData, newDayData]);
@@ -253,8 +300,6 @@ const EmployeeDetailModal = ({
           timeEnd,
           format(formattedDate, "yyyy-MM-dd")
         );
-
-        // Cập nhật monthData với dữ liệu đã cập nhật
         const updatedData = monthData.map((d) =>
           format(d.day, "yyyy-MM-dd") === selectedDateFormatted
             ? { ...d, times: dailyTimes }
@@ -334,36 +379,28 @@ const EmployeeDetailModal = ({
   const fetchTimekeepingData = async () => {
     setIsCalendarLoading(true);
     try {
-      const start = startOfMonth(currentMonth);
-      const end = endOfMonth(currentMonth);
-      console.log("=====employee====",employee)
+      const start = convertToISODate(startOfMonth(currentMonth));
+      const end = convertToISODate(endOfMonth(currentMonth));
       if (employee) {
-        const res = await Get_TIMEKEEPING_By_StaffID(
-          statechinhanh,
-          start,
-          end,
-          employee.id
-        );
-        console.log("=====res===",res)
+        const res = await Get_TIMEKEEPING_By_StaffID(start, end, employee.id);
         if (res && res.length > 0) {
           setTimekeepingData(res);
           const formattedData = res.map((item) => ({
-            day: new Date(item.createDate),
-            times: item.startCheck.map((checkIn, index) => ({
-              checkIn,
-              checkOut: item.endCheck[index],
-            })),
+            day: convertToISODate(new Date(item.createDate)),
+            times: {
+              checkIn: item?.startCheck,
+              checkOut: item?.endCheck,
+            },
           }));
           setMonthData(formattedData);
         } else {
-          setTimekeepingData([]); // Reset timekeeping data
-          setMonthData([]); // Reset month data
+          setTimekeepingData([]);
+          setMonthData([]);
         }
       }
     } catch (error) {
-      console.log("=====error===",error)
     } finally {
-      setIsCalendarLoading(false); // Kết thúc trạng thái loading cho lịch
+      setIsCalendarLoading(false);
     }
   };
 
@@ -373,6 +410,7 @@ const EmployeeDetailModal = ({
       fetchTimekeepingData();
     }
   }, [employee, employee, currentMonth, statechinhanh]);
+
   useEffect(() => {
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -386,20 +424,48 @@ const EmployeeDetailModal = ({
 
   const renderCalendarTileContent = ({ date, view }) => {
     if (view === "month") {
-      const dayData = monthData.find(
-        (d) => format(d.day, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
-      );
+      const dayData = monthData.filter((d) => {
+        const isTrue =
+          new Date(d.day).getTime() ==
+          new Date(convertToISODate(date)).getTime();
+        return isTrue;
+      });
 
       return (
-        <Box>
-          {dayData?.times.map((time, index) => (
-            <Box key={index}>
+        <>
+          {dayData?.length > 0 && (
+            <Box>
               <Box>
-                {time.checkIn} - {time.checkOut}
+                <div
+                  style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
+                >
+                  {dayData[0]?.times.checkIn}
+                </div>
+                <div
+                  style={{
+                    fontSize: 20,
+                    color: "gray",
+                    marginTop: -10,
+                    marginBottom: -8,
+                  }}
+                >
+                  <ArrowDownwardIcon
+                    style={{
+                      fontSize: "0.8rem",
+                      color: "#E41395",
+                      marginBottom: 2,
+                    }}
+                  ></ArrowDownwardIcon>
+                </div>
+                <div
+                  style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
+                >
+                  {dayData[0]?.times.checkOut ? dayData[0]?.times.checkOut : ""}
+                </div>
               </Box>
             </Box>
-          ))}
-        </Box>
+          )}
+        </>
       );
     }
     return null;
@@ -479,250 +545,337 @@ const EmployeeDetailModal = ({
     }
   }, [multiDay, dateRange, monthData]);
 
+  const handleExportDataToExcel = () => {
+    const sheetData = data?.data?.data?.map((item) => ({
+      staffid: item.staffid,
+      staffName: item.staffName,
+      branchID: item.branchID,
+      startCheck: item.startCheck,
+      endCheck: item.endCheck,
+      checkin_late: item.checkin_late,
+      checkout_early: item.checkout_early,
+      fined: item.fined,
+    }));
+
+    if (!sheetData) {
+      toast.warning("Không có dữ liểu để xuất");
+      return;
+    }
+
+    sheetData.push({
+      staffid: "",
+      staffName: "Tổng",
+      branchID: "",
+      startCheck: "",
+      endCheck: "",
+      checkin_late: data?.data.total_minutes_checkin_late,
+      checkout_early: data?.data.total_minutes_checkout_early,
+      fined: data.total_minutes_fined,
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
+
+    worksheet.columns = [
+      { header: "Mã nhân viên", key: "staffid", width: 35 },
+      { header: "Tên nhân viên", key: "staffName", width: 45 },
+      { header: "Chi nhánh", key: "branchID", width: 20 },
+      { header: "Giờ bắt đầu", key: "startCheck", width: 30 },
+      { header: "Giờ kết thúc", key: "endCheck", width: 30 },
+      { header: "Đi trễ (phút)", key: "checkin_late", width: 30 },
+      { header: "Về sớm (phút)", key: "checkout_early", width: 30 },
+      { header: "Bị phạt", key: "fined", width: 20 },
+    ];
+
+    sheetData.forEach((item) => {
+      worksheet.addRow(item);
+    });
+
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFFF00" },
+      };
+      cell.font = { bold: true };
+    });
+
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: "application/octet-stream" });
+      saveAs(blob, "tracking_data.xlsx");
+    });
+
+    toast.success("Xuất dữ liệu chấm công thành công");
+  };
+
   const handleMonthChange = ({ activeStartDate }) => {
     setCurrentMonth(activeStartDate);
   };
+
   const handleModalClose = () => {
     updateTimekeepingData();
     onUpdateData();
     onClose();
   };
   if (!employee) return null;
+
+  const handleOpenPopover = (event, value) => {
+    const dayData = monthData.filter((d) => {
+      return (
+        new Date(d.day).getTime() ===
+        new Date(convertToISODate(value)).getTime()
+      );
+    });
+    dispatch(doSetDataInPopover(dayData));
+
+    setAnchorEl(event.currentTarget);
+
+    dispatch(doSetIsOpenPopover(true));
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    dispatch(doSetIsOpenPopover(false));
+  };
+
   return (
-    <Modal open={open} onClose={handleModalClose}>
-      <Box
-        width={{ xs: "90%", md: showEmployeeInfo ? "50%" : "40%" }}
-        position={"absolute"}
-        ref={modalRef}
-        className={classes.modalBox}
+    <>
+      <PopoverCustom
+        isOpen={isOpenPopover}
+        anchorEl={anchorEl}
+        handleClose={handleClose}
+      ></PopoverCustom>
+      <Modal
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          overflow: "hidden",
+        }}
+        className="model-css"
+        open={open}
+        onClose={handleModalClose}
       >
         <Box
-          position="relative"
+          sx={{
+            width: { xs: "90%", sm: "90%", md: "85%", lg: "85%" },
+            height: { sm: "80%", md: "auto", lg: "auto" },
+            maxHeight: "90vh",
+            overflowY: "auto",
+            "&::-webkit-scrollbar": { display: "none" },
+            msOverflowStyle: "none",
+            scrollbarWidth: "none",
+            backgroundColor: "white",
+            borderRadius: 8,
+            paddingLeft: { xs: 2, sm: 2, md: 4, lg: 4 },
+            paddingBottom: 4,
+            paddingRight: { xs: 2, sm: 2, md: 4, lg: 4 },
+          }}
           display="flex"
-          justifyContent="center"
-          alignItems="center"
-          width="100%"
           flexDirection="column"
+          ref={modalRef}
         >
-          <Typography
-            // variant="h3"
-            // component="h2"
-            fontWeight="bold"
-            gutterBottom
-            textTransform="uppercase"
-            textAlign="center"
-            my={4}
-            fontSize={"1.25rem"}
-          >
-            {i18n.t("Timekeep")}
-          </Typography>
-
-          <IconButton
-            onClick={onClose}
-            sx={{
-              color: "black",
-              border: "2px solid black",
-              position: "absolute",
-              right: 10,
-            }}
-            size="small"
-          >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems={"center"}
-          mb={3}
-        >
-          <EmployeeInfo
-            employee={employee}
-            statechinhanh={statechinhanh}
-            handleSubmit={handleSubmit}
-            EditStaffForm={EditStaffForm}
-            setEditStaffForm={setEditStaffForm}
-            handleFileChange={handleFileChange}
-            setShowEmployeeInfo={setShowEmployeeInfo}
-            showEmployeeInfo={showEmployeeInfo}
-          />
-
+          {/* Header Model */}
           <Box
-            width={"100%"}
-            flexDirection="column"
-            overflow={"auto"}
-            height={"70vh"}
+            position="relative"
+            display="flex"
+            justifyContent="center"
             alignItems="center"
-            className="custom-scroll"
-            display={{ xs: showEmployeeInfo ? "none" : "flex", md: "flex" }}
+            width="100%"
+            flexDirection="column"
           >
-            <Box
-              display="flex"
-              flexDirection="row"
-              width={"100%"}
-              marginBottom={0.5}
-              paddingBottom={1}
-              alignItems="center"
-              justifyContent="space-between"
-              boxShadow={"0 5px 5px -5px  rgba(0, 0, 0, 0.2)"}
-              position={"relative"}
+            <Typography
+              fontWeight="bold"
+              gutterBottom
+              textTransform="uppercase"
+              textAlign="center"
+              color={"black"}
+              my={4}
+              fontSize={"1.25rem"}
             >
-              {!showEmployeeInfo && (
-                <IconButton
-                  color="primary"
-                  size="small"
-                  position={"relative"}
-                  sx={{
-                    border: "2px solid #000000",
-                    color: "#000000",
-                    "&: hover": {
-                      backgroundColor: "#E0E0E0",
-                    },
-                    marginLeft: "20px",
-                  }}
-                  onClick={() => setShowEmployeeInfo(!showEmployeeInfo)}
-                >
-                  <ArrowForwardIos />
-                </IconButton>
-              )}
-              <Box
-                display="flex"
-                flex={1}
-                justifyContent="center"
-                alignItems="center"
-                marginLeft={"-30px"}
-              >
-                <Box
-                  display="flex"
-                  flexDirection="column"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <Typography
-                    variant="h6"
-                    fontWeight={"bold"}
-                    component="h2"
-                    align="center"
-                  >
-                    {i18n.t("Calendar")}
-                  </Typography>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        sx={{
-                          color: "black",
-                        }}
-                        icon={<CircleUnchecked sx={{ color: "black" }} />}
-                        checkedIcon={<CircleChecked sx={{ color: "black" }} />}
-                        checked={multiDay}
-                        onChange={() => setMultiDay(!multiDay)}
-                      />
-                    }
-                    label={
-                      <Typography variant="body1" style={{ fontWeight: "600" }}>
-                        {i18n.t("MultiTime")}
-                      </Typography>
-                    }
-                  />
-                </Box>
-              </Box>
-            </Box>
+              {i18n.t("Timekeep")}
+            </Typography>
 
-            <Box width={"100%"} paddingX={3}>
-              <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
-                <Backdrop
-                  sx={{
-                    color: "#fff",
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 1,
-                    borderRadius: 2,
-                    backgroundColor: "rgba(0,0,0,0.1)",
-                  }}
-                  open={isCalendarLoading}
-                >
-                  <CircularProgress color="inherit" />
-                </Backdrop>
-                <Box sx={{ opacity: isCalendarLoading ? 0.5 : 1 }}>
-                  <Calendar
-                    value={multiDay ? dateRange : selectedDate}
-                    selectRange={multiDay}
-                    onChange={(value) =>
-                      multiDay ? setDateRange(value) : setSelectedDate(value)
-                    }
-                    onClickDay={!multiDay ? handleDayClick : undefined}
-                    tileContent={renderCalendarTileContent}
-                    onActiveStartDateChange={handleMonthChange}
-                  />
-                </Box>
-              </Box>
-            </Box>
-            {(selectedDate || multiDay) && (
-              <Box
-                display={"flex"}
-                flexDirection={"column"}
-                width={"100%"}
-                mt={2}
-                paddingX={3}
-              >
-                {dailyTimes.length > 0 &&
-                  dailyTimes.map((time, index) => (
-                    <TimeKeepingLabel
-                      key={index}
-                      index={index}
-                      timeIn={time.checkIn}
-                      timeOut={
-                        time.checkOut === "24:00" ? "00:00" : time.checkOut
-                      }
-                      handleTimeChange={handleTimeChange}
-                      handleDelete={handleDeleteTimeSlot}
-                    />
-                  ))}
+            <IconButton
+              className="icon-close-id"
+              onClick={onClose}
+              sx={{
+                color: "black",
+                position: "absolute",
+                right: 10,
+              }}
+              size="small"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
 
+          {/* Card User */}
+          <Box
+            sx={{
+              zIndex: 1000,
+              display: "block",
+              marginTop: { xs: -8, sm: -4, md: 0, lg: 0 },
+            }}
+            class="card-custom-id"
+          >
+            <CardCustom
+              name={employee?.name}
+              id={employee?.id}
+              role={employee?.Role}
+              avatarUser={employee?.avatar}
+            ></CardCustom>
+          </Box>
+
+          {/* Body Main */}
+          <Box
+            sx={{
+              display: { sm: "flex" },
+              flexDirection: { sm: "column", md: "row", lg: "row" },
+              marginTop: { xs: 2, sm: 10, md: 0, lg: 0 },
+            }}
+            height={"100%"}
+            display="flex"
+            justifyContent="center"
+          >
+            {/* Calender */}
+            <Box sx={{ width: { sm: "100%", md: "50%", lg: "50%" } }}>
+              <Box sx={{ width: "100%" }} paddingX={3}>
+                {/* CALENDER */}
                 <Box
-                  alignItems={"center"}
-                  justifyContent={"center"}
-                  display={"flex"}
-                  mt={2}
+                  sx={{
+                    position: "relative",
+                    width: "100%",
+                    height: "100%",
+                    overflow: "hidden",
+                  }}
                 >
-                  <IconButton
-                    onClick={handleAddTimeSlot}
+                  <Backdrop
                     sx={{
-                      border: "2px solid #22C75B",
-                      color: "#22C75B",
-                      "&: hover": {
-                        backgroundColor: "#DEFFE9",
-                      },
+                      color: "#fff",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 1,
+                      borderRadius: 2,
+                      backgroundColor: "rgba(0,0,0,0.1)",
+                    }}
+                    open={isCalendarLoading}
+                  >
+                    <CircularProgress color="inherit" />
+                  </Backdrop>
+                  {/* CALENDER MAIN */}
+                  <Box
+                    sx={{
+                      opacity: isCalendarLoading ? 0.5 : 1,
+                      fontSize: { xs: "10px", sm: "10px", md: "14px" },
+                      overflow: "hidden",
                     }}
                   >
-                    <AddIcon fontSize="medium" />
-                  </IconButton>
+                    <Calendar
+                      value={multiDay ? dateRange : selectedDate}
+                      tileContent={renderCalendarTileContent}
+                      onClickDay={(value, event) =>
+                        handleOpenPopover(event, value)
+                      }
+                    />
+                  </Box>
                 </Box>
               </Box>
-            )}
+              {(selectedDate || multiDay) && (
+                <Box
+                  display={"flex"}
+                  flexDirection={"column"}
+                  width={"100%"}
+                  mt={2}
+                  paddingX={3}
+                >
+                  {dailyTimes.length > 0 &&
+                    dailyTimes.map((time, index) => (
+                      <TimeKeepingLabel
+                        key={index}
+                        index={index}
+                        timeIn={time.checkIn}
+                        timeOut={
+                          time.checkOut === "24:00" ? "00:00" : time.checkOut
+                        }
+                        handleTimeChange={handleTimeChange}
+                        handleDelete={handleDeleteTimeSlot}
+                      />
+                    ))}
 
-            <Button
-              variant="contained"
-              onClick={multiDay ? handleMultiDayUpdate : handleUpdateTime}
-              className={classes.button}
-              sx={{ mt: 2, borderRadius: "30px" }}
-              disabled={hasEmptyFields || isLoading}
-            >
-              {isLoading ? (
-                <CircularProgress color="inherit" size={24} />
-              ) : isSuccess ? (
-                <CheckIcon />
-              ) : (
-                <Typography color={"white"}>{i18n.t("SubmitTime")}</Typography>
+                  <Box
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                    display={"flex"}
+                    mt={2}
+                  >
+                    <IconButton
+                      onClick={handleAddTimeSlot}
+                      sx={{
+                        border: "2px solid #22C75B",
+                        color: "#22C75B",
+                        "&: hover": {
+                          backgroundColor: "#DEFFE9",
+                        },
+                      }}
+                    >
+                      <AddIcon fontSize="medium" />
+                    </IconButton>
+                  </Box>
+                </Box>
               )}
-            </Button>
+            </Box>
+
+            {/* Payslips Left */}
+            <Box
+              sx={{
+                width: { sm: "100%", md: "50%", lg: "50%" },
+                marginTop: { sm: "4%", xs: "4%", md: "0%", lg: "0%" },
+              }}
+              flexDirection={"column"}
+            >
+              <Box width={"100%"} style={{ marginTop: 56 }} height={"100%"}>
+                {/* <ChartComponent data={data?.data} /> */}
+                <PayslipItem data={data?.data}></PayslipItem>
+                <PayslipList data={data?.data}></PayslipList>
+                <Button
+                  className={classes.button}
+                  onClick={handleExportDataToExcel}
+                  sx={{ mt: 2, borderRadius: "30px" }}
+                  variant="contained"
+                >
+                  {i18n.t("EXPORT")}
+                </Button>
+              </Box>
+
+              {/* Table */}
+              <Box class="">
+                {data?.data?.data?.length > 0 ? (
+                  <TableCustom data={data?.data?.data}></TableCustom>
+                ) : (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <img
+                      style={{ marginTop: 32 }}
+                      width={"44%"}
+                      src="https://nissan.navigation.com/static/WFS/Shop-Site/-/Shop/en_US/Product%20Not%20Found.png"
+                    ></img>
+                  </div>
+                )}
+              </Box>
+            </Box>
           </Box>
         </Box>
-      </Box>
-    </Modal>
+      </Modal>
+    </>
   );
 };
 

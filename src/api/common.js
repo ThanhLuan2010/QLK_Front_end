@@ -29,7 +29,7 @@ const fetchWithToken = async (url, options = {}) => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
+    const error = await response?.json();
     console.error("Something went wrong");
     // redirectToLogin();
   }

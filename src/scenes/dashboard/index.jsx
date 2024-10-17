@@ -38,6 +38,9 @@ import {
 } from "./handledashboard";
 import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import CommonStyle from "../../components/CommonStyle";
+import { useAppDispatch, useAppSelector } from "../../hook/reduxHooks";
+import { doSetIsLoading } from "../../store/slices/commonSlice";
+import { LoadingSpinner } from "../../components/commons";
 var socket = io(`${Url_realtime}`, {
   transports: ["websocket", "polling", "flashsocket"],
 });
@@ -67,6 +70,9 @@ const Dashboard = () => {
   const [mockdataNhapKho, setMockdataNhapKho] = useState([]);
   const [statesotienBAN, setstatesotienBAN] = useState(0);
   const textAreaRef = useRef();
+
+  const dispatch = useAppDispatch();
+  const { isLoading } = useAppSelector((state) => state.common);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -391,13 +397,13 @@ const Dashboard = () => {
     if (objBranch instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await objBranch;
-      const formattedContent = resolvedResult.replace(/ƒ/g, "\n");
+      const formattedContent = resolvedResult?.replace(/ƒ/g, "\n");
 
       setTextAreaValue(formattedContent);
     } else {
       // Nếu không phải là promise, cập nhật state ngay lập tức
       const stringc = objBranch;
-      const formattedContent = stringc.replace(/ƒ/g, "\n");
+      const formattedContent = stringc?.replace(/ƒ/g, "\n");
 
       setTextAreaValue(formattedContent);
     }
@@ -429,7 +435,7 @@ const Dashboard = () => {
 
       let check = await GET_ALL_MONEY_BY_STOREID_THOIDIEM_OF_PHIEUSTORE(handle);
 
-      arrayA = arrayA.concat(check.All_DOANHTHU);
+      arrayA = arrayA.concat(check?.All_DOANHTHU);
     }
 
     setMockdataNhapKho(arrayA);
@@ -449,7 +455,7 @@ const Dashboard = () => {
 
       let check = await GET_ALL_MONEY_BY_STOREID_THOIDIEM_OF_DOANHTHU(handle);
 
-      arrayA = arrayA.concat(check.All_DOANHTHU);
+      arrayA = arrayA.concat(check?.All_DOANHTHU);
     }
 
     setMockdataBan(arrayA);
@@ -474,19 +480,22 @@ const Dashboard = () => {
     });
   };
   useEffect(() => {
+    dispatch(doSetIsLoading(true));
     fetchingapi();
-    // Lắng nghe sự kiện khi có sự thay đổi nội dung từ server
     socket.on("updateContent", (newContent) => {
       setTextAreaValue(newContent);
     });
+    setTimeout(() => {
+      dispatch(doSetIsLoading(false));
+    }, 1200);
 
     return () => {
-      // Đảm bảo rằng khi component bị unmounted, không còn lắng nghe sự kiện
       socket.off("updateContent");
     };
   }, []);
   return (
     <>
+      {isLoading && <LoadingSpinner />}
       {stateCheckaccess ? (
         <>
           {" "}
@@ -504,7 +513,6 @@ const Dashboard = () => {
       ) : (
         ""
       )}
-
       {stateCheckaccess ? (
         <Box m="20px">
           {/* HEADER */}

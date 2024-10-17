@@ -6,6 +6,16 @@ i18n.use(initReactI18next).init({
   resources: {
     vi: {
       translation: {
+        // Message
+        FIELD_REQUIRED: "Trường này không được bỏ trống",
+        NUMBER_REQUIRED: "Trường này phải là số",
+        PHONE_REQUIRED: "Trường này phải là số điện thoại",
+        ROLE_EXISTED: "Chức vụ đã tồn tại",
+
+        // Message Team
+        SUCCESS_ADD_EMPLOYEE: "Thêm nhân viên thành công",
+        FAILURE_ADD_EMPLOYEE: "Thêm nhân viên thất bại",
+
         //other
         OT_BANGCHAMCONG: "Bảng chấm công",
         OT_CHOTCONG: "Chốt công",
@@ -44,8 +54,9 @@ i18n.use(initReactI18next).init({
         LBNH: "Tên ngân hàng - Số ngân hàng",
         TITLETEAM: "Thông tin nhân viên",
         DESTEAM: "Quản lý các thành viên tại cửa hàng",
-        TTNH: "Thông tin ngân hàng",
+        TTNH: "Số ngân hàng",
         THEMNV: "Thêm nhân viên",
+        TENNH: "Tên ngân hàng",
         XOANV: "Xóa nhân viên",
         SUANV: "Điều chỉnh",
         CN: "Chi nhánh",
@@ -61,6 +72,7 @@ i18n.use(initReactI18next).init({
         NGAYKT: "Ngày kết thúc",
         TONGSOGIOLAM: "TÍNH TỔNG SỐ GIỜ LÀM",
         KIEMTRASOGIOLAM: "KIỂM TRA SỐ GIỜ LÀM",
+        ADD_ROLE: "Thêm chức vụ",
         //BRANCH
         CTTONGQUAN: "Chi tiết tổng quan chi nhánh",
         TITLEBRANCH: "Chi nhánh",
@@ -270,10 +282,43 @@ i18n.use(initReactI18next).init({
         Del: "Xóa",
         Img: "Hình ảnh",
         REMAIN: "Số lượng còn trong kho",
+
+        // statistical tracking
+        TOTAL_OVERTIME: "Thời gian OT: ",
+        TOTAL_MINUTES_CHECKIN_LATER: "Tổng số giờ đi trễ: ",
+        TOTAL_MINUTES_MINUS: "Tổng số giờ bị trừ: ",
+        TOTAL_TIME_PAYSLIP: "Số giờ theo ca làm: ",
+        TOTAL_TIME_CHECKIN_LATER: "Số lần đi trễ: ",
+        TOTAL_TIME_CHECKOUT_EARLY: "Số lần về sớm: ",
+        TOTAL: "Tổng cộng: ",
+
+        // Common
+        EXPORT: "Xuất dữ liệu",
+        MINUS: "phút",
+        HOURS: "giờ",
+        TOTAL_TIME: "lần",
+        NOT_DATA: "Chưa có dữ liệu",
+        SHIFT: "Ca",
+
+        // Table Employee
+        TABLE_DAY: "Ngày",
+        TABLE_CHECKIN: "Thời gian vào",
+        TABLE_CHECKOUT: "Thời gian ra",
+        TABLE_MINUS: "Bị trừ",
       },
     },
     ko: {
       translation: {
+        // Message
+        FIELD_REQUIRED: "이 필드는 비워둘 수 없습니다",
+        NUMBER_REQUIRED: "이 필드는 숫자여야 합니다",
+        PHONE_REQUIRED: "이 필드는 전화번호여야 합니다",
+
+        // Message Team
+        SUCCESS_ADD_EMPLOYEE: "직원을 추가했습니다",
+        FAILURE_ADD_EMPLOYEE: "더 많은 직원이 실패합니다",
+        ROLE_EXISTED: "해당 위치가 이미 존재합니다",
+
         //other
         OT_BANGCHAMCONG: "출근부",
         OT_CHOTCONG: "결근",
@@ -300,6 +345,7 @@ i18n.use(initReactI18next).init({
         TKCT: "회사 재고",
         QLNV: "인사 관리",
         QLCNHANH: "지점 관리",
+        TENNH: "행 이름",
         QLK: "창고 관리",
         TT: "정보",
         BDTK: "재고 변동",
@@ -338,6 +384,7 @@ i18n.use(initReactI18next).init({
         ALERT_THEMNHANVIEN_TEAM: "직원이 성공적으로 추가되었습니다",
         QLMCC: "출퇴근 기록 관리",
         THOIDIEMTAOPHIEU: "전표 생성 시점",
+        ADD_ROLE: "위치 추가",
         //BRANCH
         TITLEBRANCH: "지점",
         DESBRANCH: "지점 정보 관리",
@@ -536,6 +583,30 @@ i18n.use(initReactI18next).init({
         DetailProduct1: "제품 세부정보",
         Del: "삭제",
         Img: "이미지",
+
+        // statistical tracking
+        TOTAL_OVERTIME: "초과 근무 시간",
+        TOTAL_MINUTES_CHECKIN_LATER: "지각 시간 총 분",
+        TOTAL_MINUTES_MINUS: "초과 근무 시간",
+        TOTAL_TIME_PAYSLIP: "총 시간",
+        TOTAL_MINUTES_CHECKOUT_EARLY: "조기 퇴근 총 분",
+        TOTAL_TIME_CHECKIN_LATER: "지각 총 시간",
+        TOTAL_TIME_CHECKOUT_EARLY: "조기 퇴근 총 시간",
+        TOTAL: "총계",
+
+        // Common
+        EXPORT: "조기 퇴근 총 시간",
+        MINUS: "분",
+        HOURS: "시간",
+        TOTAL_TIME: "시간",
+        NOT_DATA: "사용 가능한 데이터가 없습니다",
+        SHIFT: "옮기다",
+
+        // Table Employee
+        TABLE_DAY: "낮",
+        TABLE_CHECKIN: "입장 시간",
+        TABLE_CHECKOUT: "타임아웃",
+        TABLE_MINUS: "공제됨",
       },
     },
   },
