@@ -164,7 +164,7 @@ const Form = () => {
                   <tr key={item.id}>
                     <td>{item.id}</td>
                     <td>{item.loai}</td>
-                    <td>{item.soluong}</td>
+                    <td>{item?.soluong}</td>
 
                     <td>
                       {item.picture ? (
@@ -214,7 +214,6 @@ const Form = () => {
     {
       field: "updateDate",
       headerName: `${i18n.t("NGAYCAPNHAT_NP")}`,
-
       flex: 1,
     },
     {
@@ -224,67 +223,7 @@ const Form = () => {
       renderCell: ArrayObjectCell,
     },
   ];
-  const Columns = [
-    { field: "id", headerName: `${i18n.t("MASP_P")}`, flex: 0.5 },
 
-    {
-      field: "name",
-      headerName: `${i18n.t("TEN_P")}`,
-      flex: 1,
-      headerAlign: "left",
-      align: "left",
-    },
-    {
-      field: "loai",
-      headerName: `${i18n.t("LOAI_P")}`,
-      flex: 1,
-      headerAlign: "left",
-      align: "left",
-    },
-    {
-      field: "sotien",
-      headerName: `${i18n.t("SOTIEN_NP")}`,
-      flex: 1,
-      headerAlign: "left",
-      align: "left",
-      renderCell: StatusMoney,
-    },
-    // {
-    //   field: "picture",
-    //   headerName: `${i18n.t("HINHANH_P")}`,
-    //   renderCell: ImageCell,
-    //   flex: 1,
-    //   width: 130,
-
-    //   headerAlign: "left",
-    //   align: "left",
-    // },
-    {
-      field: "soluong",
-      headerAlign: "left",
-      headerName: `${i18n.t("SOLUONG_P")}`,
-      flex: 1,
-    },
-    // {
-    //   field: "xuatxu",
-    //   headerName: `Xuất xứ`,
-    //   flex: 1,
-    //   headerAlign: "left",
-    //   align: "left",
-    // },
-    // {
-    //   field: "status",
-    //   headerAlign: "left",
-    //   headerName: `${i18n.t("TINHTRANG_P")}`,
-    //   flex: 1,
-    // },
-    // {
-    //   field: "behavior",
-    //   headerAlign: "left",
-    //   headerName: `${i18n.t("HANHVI_P")}`,
-    //   flex: 1,
-    // },
-  ];
   const [errorMessages, setErrorMessages] = useState({
     name: "",
     loai: "",
@@ -409,6 +348,7 @@ const Form = () => {
     }
     setstateCheckAccess(checkaccess);
   };
+
   const fetchgetAllOrder_BY_storeID = async (x, y) => {
     const check = await getAllOrder_BY_storeID(x);
     if (check instanceof Promise) {
@@ -428,6 +368,7 @@ const Form = () => {
       setstateID(createID);
     }
   };
+
   const fetchingapi = async () => {
     await checkAccess();
     await fetchingStore();
@@ -439,10 +380,7 @@ const Form = () => {
     setStatechinhanh(chinhanhdau);
     setchinhanhnhan(chinhanhdau);
   };
-  function SotienObjectCell(params) {
-    const Object = params.value;
-    return <span>{Object} VND</span>;
-  }
+
   function UpdatedateObjectCell(params) {
     const arrayObject = params.value;
     const originalDateString = arrayObject;
@@ -470,6 +408,7 @@ const Form = () => {
       </span>
     );
   }
+
   function StatusObjectCell(params) {
     const arrayObject = params.value;
     if (arrayObject === "CANCEL") {
@@ -520,6 +459,7 @@ const Form = () => {
       );
     }
   }
+
   function StatusObjectCellLoai(params) {
     const arrayObject = params.value;
     if (arrayObject === "NK") {
@@ -570,10 +510,10 @@ const Form = () => {
       );
     }
   }
+
   function ArrayObjectCell(params) {
     const arrayObject = params.value;
     const numberOfItems = Array.isArray(arrayObject) ? arrayObject.length : 0;
-
     return (
       <>
         <Box>
@@ -581,20 +521,13 @@ const Form = () => {
             className={classes.button}
             onClick={() => handleOpenPopup(arrayObject)}
           >
-            {" "}
             {numberOfItems} Items
           </Button>
-
-          {/* {showPopup ? ( */}
-
-          {/* ) : (
-            ""
-          )} */}
         </Box>
       </>
     );
   }
-  console.log({ stateProduct });
+
   const showAlert = async () => {
     try {
       if (!statePhieu.loaiphieu) {
@@ -721,21 +654,13 @@ const Form = () => {
       console.log(error);
     }
   };
+  
   const acceptPhieu = () => {
-    // Biến để kiểm tra
-
-    // Sử dụng filter để lọc array1
-    const filteredArray = stateProductfetch.filter((obj1) =>
-      selectedRow[0].arrayProduct.some(
-        (obj2) => obj2.id == obj1.id && obj2.soluong > obj1.soluong
-      )
-    );
-
-    // if (filteredArray.length !== 0) {
-    //   setstateErrorSL(true);
-    // } else {
-    //   setstateErrorSL(false);
-    // }
+    // const filteredArray = stateProductfetch.filter((obj1) =>
+    //   selectedRow[0].arrayProduct.some(
+    //     (obj2) => obj2.id == obj1.id && obj2?.soluong > obj1?.soluong
+    //   )
+    // );
     setStateProduct(selectedRow[0].arrayProduct);
     setStatePhieu({
       ...statePhieu,
@@ -745,13 +670,14 @@ const Form = () => {
       targetRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
+
   const updateEditproduct = async () => {
     for (const item of stateProduct) {
       const itemsWithIdOne = stateProductfetch.filter(
         (itemx) => itemx.id === item.id
       );
       item.soluong = parseInt(
-        parseFloat(itemsWithIdOne[0].soluong) - parseFloat(item.soluong)
+        parseFloat(itemsWithIdOne[0]?.soluong) - parseFloat(item?.soluong)
       );
       console.log("stateProduct", stateProduct);
       console.log("stateProductfetch", stateProductfetch);
@@ -759,6 +685,7 @@ const Form = () => {
       // await EditProduct(item); // Gọi hàm bất đồng bộ trong vòng lặp
     }
   };
+
   const onChangeAddProductForm = (event) => {
     // // Tách phần số từ chuỗi 'id' và chuyển đổi thành số nguyên
     // const arrayOfNumbers = stateProduct.map((obj) =>
@@ -904,7 +831,7 @@ const Form = () => {
       (item) => item.id === productId
     );
     if (
-      checksoluongrow[0].soluong < stateupdatesoluong.usoluong ||
+      checksoluongrow[0]?.soluong < stateupdatesoluong.usoluong ||
       stateupdatesoluong.usoluong < 0
     ) {
       alert("Số lượng nhập có giá trị lớn hơn số lượng đang có hoặc nhỏ hơn 0");
@@ -954,7 +881,7 @@ const Form = () => {
       const selectedRow = stateProductfetch.find(
         (row) => row.id === selectedId
       );
-      return selectedRow && selectedRow.soluong === 0;
+      return selectedRow && selectedRow?.soluong === 0;
     });
     if (hasAcceptedOrCancelled) {
       // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
@@ -968,7 +895,6 @@ const Form = () => {
     const selectedRows = newSelectionModel.map((selectedId) =>
       statePhieuStore.find((row) => row.id === selectedId)
     );
-    // setstateErrorSL(false);
     setSelectedRow(selectedRows);
 
     const hasAcceptedOrCancelled = newSelectionModel.some((selectedId) => {
@@ -981,12 +907,13 @@ const Form = () => {
           selectedRow.loaiphieu === "NN")
       );
     });
-    if (hasAcceptedOrCancelled) {
-      // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
-      return;
-    }
+    // if (hasAcceptedOrCancelled) {
+    //   // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
+    //   return;
+    // }
     setSelectionModelPhieu(newSelectionModel);
   };
+
   const onchangeupdatesoluong = (event) => {
     setstateupdatesoluong({
       ...stateupdatesoluong,
@@ -1050,7 +977,7 @@ const Form = () => {
     //   (item) => item.id === e.target.id
     // );
 
-    // if (checksoluongrow[0].soluong < e.target.value) {
+    // if (checksoluongrow[0]?.soluong < e.target.value) {
     //   alert("Số lượng nhập có giá trị lớn hơn số lượng đang có hoặc nhỏ hơn 0");
 
     //   return;
@@ -1060,7 +987,7 @@ const Form = () => {
       row.id === e.target.id ? { ...row, soluong: e.target.value * 1 } : row
     );
     let sumallvalue = 0;
-    updatedRows.forEach((item) => (sumallvalue += item.sotien * item.soluong));
+    updatedRows.forEach((item) => (sumallvalue += item.sotien * item?.soluong));
     setStateProduct(updatedRows);
   };
   const columnsNK = [
@@ -1083,7 +1010,7 @@ const Form = () => {
             }
           }}
           onChange={handleEditProductNEW}
-          value={params.row.soluong}
+          value={params.row?.soluong}
           className={classes.textField}
         />
       ),
@@ -1093,7 +1020,7 @@ const Form = () => {
       flex: 1,
       renderCell: (params) => (
         <Typography color={"red"}>
-          {stateProductfetch.find((row) => row.id === params.row.id).soluong}
+          {stateProductfetch.find((row) => row.id === params.row.id)?.soluong}
         </Typography>
       ),
     },
@@ -1122,6 +1049,7 @@ const Form = () => {
       ),
     },
   ];
+  console.log("==selectionModelPhieu===",selectionModelPhieu)
   return (
     <Box m="20px">
       <Header ref={ref} title={i18n.t("TITLEPHIEUXUAT")} />
@@ -1243,11 +1171,7 @@ const Form = () => {
                   >
                     {stateStore &&
                       stateStore.map((object, index) => (
-                        <MenuItem
-                          key={index}
-                          // value={{ id: object.id, code: object.code }}
-                          value={object.id}
-                        >
+                        <MenuItem key={index} value={object.id}>
                           {object.name}
                         </MenuItem>
                       ))}
@@ -1293,14 +1217,6 @@ const Form = () => {
                   {i18n.t("DetailProduct1")}
                 </Typography>
                 <br></br>
-
-                {/* {stateErrorSL ? (
-                  <label style={{ color: "red" }} htmlFor="usoluong">
-                    * Số lượng đã vượt quá giới hạn trong kho !
-                  </label>
-                ) : (
-                  ""
-                )} */}
                 <Box height="50vh" className={classes.datagridInfo}>
                   <DataGrid
                     rows={stateProduct}
