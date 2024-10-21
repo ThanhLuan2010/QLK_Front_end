@@ -1246,7 +1246,7 @@ const Team = () => {
       <Box height="75vh" className={classes.datagrid}>
         <DataGrid
           zIndex={10}
-          checkboxSelection
+          // checkboxSelection
           editMode="row"
           selectionModel={selectionModel}
           onSelectionModelChange={handleSelectionModelChange}

@@ -128,8 +128,9 @@ const EmployeeDetailModal = ({
   const { month, year } = handleGetDayTime();
   const { data, loading } = useGetData({
     url: "/timekeep/get-payslip-by-staff",
-    queryParams: `month=${month}&year=${year}&staffId=${employee?.id}`,
+    queryParams: `month=${month}&year=${year}&staffId=${employee?.id}&branch_id=${statechinhanh}`,
   });
+  console.log("🚀 ~ data:", data);
 
   const { isOpenPopover } = useAppSelector((state) => state.common);
 
@@ -426,8 +427,8 @@ const EmployeeDetailModal = ({
     if (view === "month") {
       const dayData = monthData.filter((d) => {
         const isTrue =
-          new Date(d.day).getTime() ==
-          new Date(convertToISODate(date)).getTime();
+          new Date(d.day).setHours(0, 0, 0, 0) ==
+          new Date(convertToISODate(date)).setHours(0, 0, 0, 0);
         return isTrue;
       });
 
@@ -485,40 +486,6 @@ const EmployeeDetailModal = ({
       i === index ? { ...time, [type]: value } : time
     );
     setDailyTimes(newTimes);
-  };
-
-  const hasEmptyFields = dailyTimes.some(
-    (time) => time.checkIn === "" || time.checkOut === ""
-  );
-
-  const handleMultiDayUpdate = async () => {
-    console.log("dateRange", dateRange);
-
-    if (dateRange.length !== 2) {
-      alert("Vui lòng chọn ít nhất 2 ngày để chấm công nhiều ngày.");
-      return;
-    }
-    if (!validateTimes(dailyTimes)) {
-      return;
-    }
-
-    const hasMultipleCheckInOutDays = monthData.some((d) =>
-      isWithinInterval(d.day, { start: dateRange[0], end: dateRange[1] })
-        ? d.times.length > 1
-        : false
-    );
-
-    if (hasMultipleCheckInOutDays) {
-      if (
-        window.confirm(
-          "Một số ngày đã có nhiều lượt chấm công. Bạn có chắc chắn muốn cập nhật tất cả các ngày này không?"
-        )
-      ) {
-        await handleUpdateMultipleTimeKeeping();
-      }
-    } else {
-      await handleUpdateMultipleTimeKeeping();
-    }
   };
 
   useEffect(() => {
@@ -606,10 +573,6 @@ const EmployeeDetailModal = ({
     });
 
     toast.success("Xuất dữ liệu chấm công thành công");
-  };
-
-  const handleMonthChange = ({ activeStartDate }) => {
-    setCurrentMonth(activeStartDate);
   };
 
   const handleModalClose = () => {
@@ -877,6 +840,7 @@ const EmployeeDetailModal = ({
       </Modal>
     </>
   );
+  console.log("🚀 ~ data:", data);
 };
 
 export default EmployeeDetailModal;

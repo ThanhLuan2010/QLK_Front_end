@@ -26,6 +26,7 @@ const useGetData = ({
           `${queryParams}&page=${pageCurrent}&limit=${limit}`
         )
       );
+      console.log("data demo =======================>  ", response);
       if (response?.data?.totalPages) setTotalPages(response?.data?.totalPages);
       setData(response);
     } catch (err) {
