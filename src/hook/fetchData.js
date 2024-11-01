@@ -4,17 +4,13 @@ import Url_BackEnd from "../URL";
 import { firstValueFrom } from "rxjs";
 import { Method } from "../api/common";
 
-const useGetData = ({
-  url = "",
-  queryParams,
-  pageSize = 10,
-  limit = 10,
-  pageCurrent,
-}) => {
+const useGetData = ({ url = "", queryParams }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState();
+  const [pageCurrent, setPageCurrent] = useState(1);
+  const limit = 10;
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -26,7 +22,6 @@ const useGetData = ({
           `${queryParams}&page=${pageCurrent}&limit=${limit}`
         )
       );
-      console.log("data demo =======================>  ", response);
       if (response?.data?.totalPages) setTotalPages(response?.data?.totalPages);
       setData(response);
     } catch (err) {
@@ -36,11 +31,18 @@ const useGetData = ({
     }
   }, [url, pageCurrent, pageSize, queryParams]);
 
+
+
+    fetchData(1);
+    setPageCurrent(1);
+  };
+
+
   useEffect(() => {
     fetchData();
   }, [fetchData, queryParams]);
 
-  return { data, loading, error, pageCurrent, totalPages };
+  return { data, loading, error, pageCurrent, totalPages, reLoad };
 };
 
 export default useGetData;
