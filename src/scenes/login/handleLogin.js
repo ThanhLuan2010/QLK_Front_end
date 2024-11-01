@@ -3,7 +3,7 @@ import { Method } from "../../api/common";
 import { firstValueFrom } from "rxjs";
 const HandleLogin = async (req) => {
   const response = await firstValueFrom(
-    Method.post(`${Url_BackEnd}/Auth/login`, {
+    Method.post(`${Url_BackEnd}/Auth/Login`, {
       username: req.username,
       password: req.password,
     })

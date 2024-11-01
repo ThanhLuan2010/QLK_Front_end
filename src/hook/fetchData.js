@@ -1,5 +1,4 @@
-import { useCallback, useEffect } from "react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Url_BackEnd from "../URL";
 import { firstValueFrom } from "rxjs";
 import { Method } from "../api/common";
@@ -15,6 +14,7 @@ const useGetData = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState();
+  const [reloadTrigger, setReloadTrigger] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -26,7 +26,6 @@ const useGetData = ({
           `${queryParams}&page=${pageCurrent}&limit=${limit}`
         )
       );
-      console.log("data demo =======================>  ", response);
       if (response?.data?.totalPages) setTotalPages(response?.data?.totalPages);
       setData(response);
     } catch (err) {
@@ -36,11 +35,15 @@ const useGetData = ({
     }
   }, [url, pageCurrent, pageSize, queryParams]);
 
+  const reload = () => {
+    setReloadTrigger((prev) => !prev);
+  };
+
   useEffect(() => {
     fetchData();
-  }, [fetchData, queryParams]);
+  }, [fetchData, reloadTrigger]);
 
-  return { data, loading, error, pageCurrent, totalPages };
+  return { data, loading, error, pageCurrent, totalPages, reload };
 };
 
 export default useGetData;
