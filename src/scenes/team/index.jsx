@@ -58,21 +58,9 @@ const Team = () => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const [isError, setisError] = useState(false);
-  const [stateimage, setStateimg] = useState("");
-  const [stateimageTwo, setStateimgTwo] = useState("");
-  const [stateimageFileName, setStateimgFileName] = useState("");
-  const [stateimageTwoFileName, setStateimgTwoFileName] = useState("");
-  const [stateimageEdit, setStateimgEdit] = useState("");
-  const [stateimageTwoEdit, setStateimgTwoEdit] = useState("");
-  const [stateimageFileNameEdit, setStateimgFileNameEdit] = useState("");
-  const [stateimageTwoFileNameEdit, setStateimgTwoFileNameEdit] = useState("");
-  const [stateViewimg, setstateViewimg] = useState("");
   const [isloading, setIsloading] = useState(false);
   const [isloadingDeleted, setIsloadingDeleted] = useState(false);
   const [stateTimekeep, setStateTimekeep] = useState([]);
-  const [ischecked, setIschecked] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(""); // State để theo dõi giá trị được chọn trong select
   const [isLoadingTimekeeping, setIsLoadingTimekeeping] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const isXsScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -87,10 +75,6 @@ const Team = () => {
     startOfMonth(new Date(datetimeToday))
   );
   const [endDate, setEndDate] = useState(endOfMonth(new Date(datetimeToday)));
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [totalTime, setTotalTime] = useState("");
-  const [totalTimeCheck, setTotalTimeCheck] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [openModalAdd, setOpenModalAdd] = useState(false);
@@ -109,9 +93,7 @@ const Team = () => {
     setOpenModalAdd(true);
   };
 
-  const updateTimekeepingData = (updatedData) => {
-    setStateTimekeep(updatedData);
-  };
+
   const handleCloseModal = async () => {
     setOpenModal(false);
     setSelectedEmployee(null);
@@ -121,46 +103,7 @@ const Team = () => {
     setOpenModalAdd(false);
     await fetchTimekeepingData();
   };
-  const handleCheckButtonClick = async () => {
-    const start = new Date(`${datetimeToday}T${startTime}`);
-    const end = new Date(`${datetimeToday}T${endTime}`);
-    const diffMilliseconds = end - start;
-
-    const totalHours = Math.floor(diffMilliseconds / (1000 * 60 * 60));
-    const totalMinutes = Math.floor(
-      (diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
-    );
-
-    setTotalTime(`${totalHours} giờ ${totalMinutes} phút`);
-
-    try {
-      const promises = selectedRowTimekeeps.map(async (item) => {
-        let objUpdate = {
-          id: item.id,
-          branchID: statechinhanh,
-          reason: "...",
-          startCheck: startTime,
-          endCheck: endTime,
-          Total: diffMilliseconds,
-        };
-
-        await HandleEditTimekeeps(objUpdate);
-      });
-
-      await Promise.all(promises);
-      alert("Cập nhật, chấm công thành công ");
-      await fetchingTimekeep(statechinhanh, startDate, endDate);
-      setSelectRowTimekeeps([]);
-      setSelectionModelTimeKeep([]);
-      setStartTime("");
-      setEndTime("");
-      setTotalTime("");
-      setTotalTimeCheck("");
-    } catch (error) {
-      console.log("Có gì đó không đúng, không được để trống thời gian!!!!");
-    }
-  };
-
+  
   const columns = [
     {
       field: "id",
@@ -182,7 +125,6 @@ const Team = () => {
   const [stateStaffOff, setStateStaffOff] = useState([]);
   const [statechinhanh, setStatechinhanh] = useState("");
   const [selectionModel, setSelectionModel] = useState([]);
-  const [selectionModelTimeKeep, setSelectionModelTimeKeep] = useState([]);
   const [selectionModelOff, setSelectionModelOff] = useState([]);
   const [selectRowOff, setSelectRowOff] = useState([]);
   const [selectedRow, setSelectedRow] = useState([]);
@@ -192,7 +134,7 @@ const Team = () => {
     if (statechinhanh) {
       fetchingGettAllStaft_by_branchID(statechinhanh);
     }
-  }, [statechinhanh, isDataUpdated]);
+  }, [statechinhanh, isDataUpdated,selectedMonth]);
 
   const handleSelectionModelChange = (newSelectionModel) => {
     const selectedRows = newSelectionModel.map((selectedId) =>
@@ -274,81 +216,6 @@ const Team = () => {
     setSelectionModelOff(newSelectionModel);
   };
 
-  function ChamCong(params) {
-    const arrayObject = params.value;
-    const originalDateString = arrayObject;
-    const { day, minutes, hours, month, year } =
-      handleGetDayTime(originalDateString);
-
-    const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}`;
-    return <span>{formattedDateString}</span>;
-  }
-
-  function GhiChu(params) {
-    return (
-      <>
-        <div className="container">
-          <select className="w-100 " style={{ height: "45px" }} id="support">
-            <option value={params.value}>{params.value}</option>
-            {stateBranch &&
-              stateBranch.map((object, index) => (
-                <React.Fragment key={index}>
-                  <option value={object.branchID}>{object.name}</option>
-                </React.Fragment>
-              ))}
-          </select>
-        </div>
-      </>
-    );
-  }
-
-  function UpdatedateObjectCell(params) {
-    const arrayObject = params.value;
-    const originalDateString = arrayObject;
-    const { seconds, minutes, hours, day, month, year } =
-      handleGetDayTime(originalDateString);
-
-    // Tạo chuỗi mới với định dạng "năm tháng ngày giờ phút giây"
-    const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    return <span>{formattedDateString}</span>;
-  }
-
-  function ImageRole(params) {
-    let getvalue = params.value;
-    if (getvalue === ROLE_EMPLOYEE.MANAGER.VALUE) {
-      getvalue = "QUẢN LÝ TRƯỞNG";
-    } else if (getvalue === ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE) {
-      getvalue = "PHÓ QUẢN LÝ";
-    } else if (getvalue === ROLE_EMPLOYEE.STAFF.VALUE) {
-      getvalue = "NHÂN VIÊN";
-    }
-    return (
-      <>
-        <span>{getvalue}</span>
-      </>
-    );
-  }
-
-  function ImageCell(params) {
-    return (
-      <>
-        <img
-          src={params.value}
-          onDoubleClick={clickdoublegetimg}
-          alt="Image"
-          loading="lazy"
-          width={100}
-          height={50}
-          style={{ cursor: "pointer" }}
-        />
-      </>
-    );
-  }
-
-  const clickdoublegetimg = (e) => {
-    setstateViewimg(e.target.src);
-  };
-
   const handleSaveClick = async () => {
     try {
       if (handleCheckExistId(stateStaffOff, selectedRow)) {
@@ -417,7 +284,7 @@ const Team = () => {
       fetchingTimekeep(statechinhanh, startDate, endDate);
     }
   }, [selectedMonth, statechinhanh]);
-  console.log("statechinhanh", statechinhanh);
+
   const handleExportExcel = async () => {
     if (isLoadingTimekeeping || isInitialLoad) {
       alert(
@@ -425,7 +292,6 @@ const Team = () => {
       );
       return;
     }
-    console.log(stateTimekeep);
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Bảng chấm công");
     const daysInMonth = new Date(
@@ -433,6 +299,8 @@ const Team = () => {
       selectedMonth.month,
       0
     ).getDate();
+
+    console.log("=====daysInMonth====",)
 
     // Add title row with custom formatting
     const titleRow = worksheet.addRow(["BẢNG CHẤM CÔNG"]);
@@ -546,19 +414,20 @@ const Team = () => {
                 endHour = 0,
                 endMinute = 0;
               if (
-                typeof timekeep.startCheck[i] === "string" &&
-                typeof timekeep.endCheck[i] === "string"
+                typeof timekeep.startCheck === "string" &&
+                typeof timekeep.endCheck === "string"
               ) {
-                [startHour, startMinute] = timekeep.startCheck[i]
+                [startHour, startMinute] = timekeep.startCheck
                   .split(":")
                   .map(Number);
-                [endHour, endMinute] = timekeep.endCheck[i]
+                [endHour, endMinute] = timekeep.endCheck
                   .split(":")
                   .map(Number);
               }
               const start = new Date(0, 0, 0, startHour, startMinute);
               const end = new Date(0, 0, 0, endHour, endMinute);
               const diffMilliseconds = end - start;
+
               totalHours += Math.floor(diffMilliseconds / (1000 * 60 * 60));
               totalMinutes += Math.floor(
                 (diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
@@ -641,6 +510,7 @@ const Team = () => {
     link.download = `Bảng chấm công tháng ${selectedMonth.month} năm ${selectedMonth.year}.xlsx`;
     link.click();
   };
+
   const handleExportExcelCines = async () => {
     if (isLoadingTimekeeping || isInitialLoad) {
       alert(
@@ -999,6 +869,7 @@ const Team = () => {
       setStateStaffOff(JSON.parse(check));
     }
   };
+
   const handle_getAllStaff = async (e) => {
     setStatechinhanh(e.target.value);
 
@@ -1010,7 +881,7 @@ const Team = () => {
   const { data: dataBranch, loading } = useGetData({
     url: "/Branch/admin/getallbranch/",
   });
-  // console.log("🚀 ~ Team ~ dataBranch:", dataBranch);
+
   useEffect(() => {
     (async () => {
       dispatch(doSetBranch(dataBranch?.All_Branch));
@@ -1037,6 +908,7 @@ const Team = () => {
       }
     }
   };
+
   useEffect(() => {
     const fetchingapi = async () => {
       try {

@@ -29,14 +29,12 @@ const useGetData = ({ url = "", queryParams }) => {
     } finally {
       setLoading(false);
     }
-  }, [url, pageCurrent, pageSize, queryParams]);
+  }, [url, pageCurrent,  queryParams]);
 
-
-
+  const reLoad = () => {
     fetchData(1);
     setPageCurrent(1);
   };
-
 
   useEffect(() => {
     fetchData();
