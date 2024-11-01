@@ -304,7 +304,6 @@ const Form = () => {
     try {
       if (!statePhieu.loaiphieu) {
         setisshowError(true);
-
         return;
       } else {
         setisshowError(false);
@@ -336,14 +335,6 @@ const Form = () => {
           {
             label: "Yes",
             onClick: async () => {
-              // stateProduct.forEach(async (item) => {
-              //   await HandleUpload(
-              //     "STORE",
-              //     item.pictureview,
-              //     statechinhanhdau,
-              //     item.pictureName
-              //   );
-              // });
               setisloading(true);
               const createphieu = {
                 id: stateID,
@@ -358,7 +349,6 @@ const Form = () => {
                 updateDate: "...",
               };
 
-              console.log("phieu", createphieu);
               const check = await createPhieu(createphieu);
               console.log("check: ", check);
               if (
@@ -711,7 +701,7 @@ const Form = () => {
   ];
   return (
     <>
-      <Box justifyContent={"center"} alignItems={"center"} m="20px">
+      <Box m="20px" height={"100%"}>
         {/* Sản phẩm còn trong kho */}
         {statePhieu.loaiphieu && statePhieu.loaiphieu === "NK" ? (
           <div>
@@ -744,240 +734,202 @@ const Form = () => {
         )}
         <Header title={i18n.t("TITLENHAP")} />
 
-        <Formik
-          onSubmit={handleFormSubmit}
-          initialValues={initialValues}
-          validationSchema={checkoutSchema}
+        <Box
+          display="grid"
+          gap="30px"
+          gridTemplateColumns="repeat(4, minmax(0, 1fr))"
+          sx={{
+            "& > div": { gridColumn: isNonMobile ? undefined : "span 4" },
+          }}
+          color={colors.grey[100]}
         >
-          {({ values, errors, touched, date, handleChange, handleSubmit }) => (
-            <form onSubmit={handleSubmit}>
-              <Box
-                display="grid"
-                gap="30px"
-                gridTemplateColumns="repeat(4, minmax(0, 1fr))"
-                sx={{
-                  "& > div": { gridColumn: isNonMobile ? undefined : "span 4" },
-                }}
-                color={colors.grey[100]}
-              >
-                <Box sx={{ gridColumn: "span 2" }}>
-                  <Typography ml={2} variant="body2">
-                    {" "}
-                    {i18n.t("TONGSOTIEN_NHAP")}
-                  </Typography>
+          <Box sx={{ gridColumn: "span 2" }}>
+            <Typography ml={2} variant="body2">
+              {i18n.t("TONGSOTIEN_NHAP")}
+            </Typography>
+            <TextField
+              readOnly
+              type="text"
+              fullWidth
+              className={classes.textField}
+              name="sotien"
+              value={
+                stateCheckaccess
+                  ? parseInt(statePhieu.sotien).toLocaleString("en-US")
+                  : statePhieu.loaiphieu === "NN"
+                  ? parseInt(statePhieu.sotien).toLocaleString("en-US")
+                  : "#####"
+              }
+            />
+          </Box>
+          <Box fullWidth>
+            <Typography ml={2} variant="body2">
+              {i18n.t("THOIDIEMLAP")}
+            </Typography>
+            <FormControl fullWidth>
+              <DatePicker
+                selected={statePhieu.thoidiem}
+                onChange={(date) => handleDateChange(date)}
+                dateFormat="dd/MM/yyyy"
+                customInput={
                   <TextField
-                    readOnly
-                    type="text"
+                    name="thoidiem"
                     fullWidth
                     className={classes.textField}
-                    name="sotien"
-                    value={
-                      stateCheckaccess
-                        ? parseInt(statePhieu.sotien).toLocaleString("en-US")
-                        : statePhieu.loaiphieu === "NN"
-                        ? parseInt(statePhieu.sotien).toLocaleString("en-US")
-                        : "#####"
-                    }
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    inputProps={{
+                      min: new Date().toISOString().split("T")[0],
+                    }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <CalendarTodayIcon sx={{ color: colors.grey[100] }} />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
-                </Box>
-                <Box fullWidth>
-                  <Typography ml={2} variant="body2">
-                    {i18n.t("THOIDIEMLAP")}
-                  </Typography>
-                  <FormControl fullWidth>
-                    <DatePicker
-                      selected={statePhieu.thoidiem}
-                      onChange={(date) => handleDateChange(date)}
-                      dateFormat="dd/MM/yyyy"
-                      customInput={
-                        <TextField
-                          name="thoidiem"
-                          fullWidth
-                          className={classes.textField}
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
-                          inputProps={{
-                            min: new Date().toISOString().split("T")[0],
-                          }}
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <CalendarTodayIcon
-                                  sx={{ color: colors.grey[100] }}
-                                />
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      }
-                      minDate={new Date()}
-                    />
-                  </FormControl>
-                </Box>
-                <Box width={"100%"}>
-                  <Typography ml={2} variant="body2">
-                    {" "}
-                    {i18n.t("LOAIPHIEU_NHAP")}
-                  </Typography>
-                  <FormControl fullWidth>
-                    <Select
-                      inputProps={{
-                        id: "age-filter",
-                      }}
-                      name="loaiphieu"
-                      value={statePhieu.loaiphieu}
-                      className={classes.select}
-                      onChange={onhandlechangePhieu}
-                    >
-                      <MenuItem
-                        style={{
-                          display: stateCheckaccess ? "none" : "block  ",
-                        }}
-                        value={"NK"}
-                      >
-                        {i18n.t("FWarehouse")}
-                      </MenuItem>
-                      <MenuItem value={"NN"}>{i18n.t("OWarehouse")}</MenuItem>
-                    </Select>
-                    {isshowError ? (
-                      <span style={{ color: "red" }}>
-                        {i18n.t("ERROR_PHIEU")}
-                      </span>
-                    ) : (
-                      ""
-                    )}
-                  </FormControl>
-                </Box>
-              </Box>
-              <div className="table-container">
-                {/* <span>
-                  {statePhieu.loaiphieu === "NN" ? (
-                    <>
-                      <span style={{ color: "black" }}>
-                        {" "}
-                        {">>> "} {i18n.t("MainTotal")} :{" "}
-                        <span style={{ color: "red", fontSize: "1.2rem" }}>
-                          {statePhieu.sotienthucte}
-                        </span>{" "}
-                      </span>
-                    </>
-                  ) : (
-                    ""
-                  )}
-                </span> */}
-                <br></br>
-                {/* <label htmlFor="usoluong">*{i18n.t("SLDC")}</label> */}
-                <br></br>
-                {isshowErrorTable ? (
-                  <span style={{ color: "red" }}>{i18n.t("ERROR_DULIEU")}</span>
-                ) : (
-                  ""
-                )}
-
-                {/* Bảng sản phẩm đã chọn */}
-                {statePhieu.loaiphieu && statePhieu.loaiphieu === "NN" && (
-                  <Box
-                    marginBottom={2}
-                    display={"flex"}
-                    justifyContent={"center"}
-                  >
-                    <Button
-                      className={classes.buttonAdd}
-                      data-toggle="modal"
-                      data-target="#staticBackdrop"
-                      onClick={handleOpenDialog}
-                    >
-                      <Box
-                        display={"flex"}
-                        flexDirection={"row"}
-                        justifyContent={"center"}
-                        alignItems={"center"}
-                      >
-                        {i18n.t("THEMSP_P")}
-                        <AddIcon fontSize="large" />
-                      </Box>
-                    </Button>
-                  </Box>
-                )}
-
-                {statePhieu.loaiphieu &&
-                statePhieu.loaiphieu === "NK" &&
-                stateProduct.length > 0 ? (
-                  <div
-                    style={{ height: 400, width: "100%" }}
-                    className={classes.datagrid}
-                  >
-                    <DataGrid
-                      rows={stateProduct}
-                      columns={columnsNK}
-                      pageSize={5}
-                    />
-                  </div>
-                ) : null}
-
-                {statePhieu.loaiphieu &&
-                statePhieu.loaiphieu === "NN" &&
-                stateProduct.length > 0 ? (
-                  <div
-                    style={{ height: 400, width: "100%" }}
-                    className={classes.datagrid}
-                  >
-                    <DataGrid
-                      rows={stateProduct}
-                      columns={columnsNN}
-                      pageSize={5}
-                      checkboxSelection
-                      onSelectionModelChange={(newSelection) => {
-                        setSelectionModel(newSelection.selectionModel);
-                        const selectedIDs = new Set(
-                          newSelection.selectionModel
-                        );
-                        const selectedData = stateProduct.filter((row) =>
-                          selectedIDs.has(row.id)
-                        );
-                        setSelectedItems(selectedData);
-                      }}
-                      selectionModel={selectionModel}
-                    />
-                  </div>
-                ) : null}
-
-                <ProductModal
-                  open={openDialog}
-                  handleClose={handleCloseDialog}
-                  stateFormProduct={stateFormProduct}
-                  setStateFormProduct={setStateFormProduct}
-                  addProduct={addproduct}
-                  errorMessages={errorMessages}
-                  stateCheckaccess={stateCheckaccess}
-                  stateimage={stateimage}
-                  stateProduct={stateProduct}
-                  setStateimg={setStateimg}
-                  statechinhanhdau={statechinhanhdau}
-                  stateProductview={stateProductview}
-                />
-              </div>
-              {stateProduct.length > 0 && (
-                <Box display="flex" marginTop={3} justifyContent="center">
-                  <Button
-                    type="submit"
-                    className={classes.button}
-                    onClick={showAlert}
-                  >
-                    {isloading ? (
-                      <CircularProgress color="inherit" size={24} />
-                    ) : (
-                      <Typography variant="body1" textTransform={"none"}>
-                        {i18n.t("BTN_GUIYEUCAU")}
-                      </Typography>
-                    )}
-                  </Button>
-                </Box>
+                }
+                minDate={new Date()}
+              />
+            </FormControl>
+          </Box>
+          <Box width={"100%"}>
+            <Typography ml={2} variant="body2">
+              {" "}
+              {i18n.t("LOAIPHIEU_NHAP")}
+            </Typography>
+            <FormControl fullWidth>
+              <Select
+                inputProps={{
+                  id: "age-filter",
+                }}
+                name="loaiphieu"
+                value={statePhieu.loaiphieu}
+                className={classes.select}
+                onChange={onhandlechangePhieu}
+              >
+                <MenuItem
+                  style={{
+                    display: stateCheckaccess ? "none" : "block  ",
+                  }}
+                  value={"NK"}
+                >
+                  {i18n.t("FWarehouse")}
+                </MenuItem>
+                <MenuItem value={"NN"}>{i18n.t("OWarehouse")}</MenuItem>
+              </Select>
+              {isshowError ? (
+                <span style={{ color: "red" }}>{i18n.t("ERROR_PHIEU")}</span>
+              ) : (
+                ""
               )}
-            </form>
+            </FormControl>
+          </Box>
+        </Box>
+        <div>
+          {isshowErrorTable ? (
+            <span style={{ color: "red" }}>{i18n.t("ERROR_DULIEU")}</span>
+          ) : (
+            ""
           )}
-        </Formik>
+
+          {/* Bảng sản phẩm đã chọn */}
+          {statePhieu.loaiphieu && statePhieu.loaiphieu === "NN" && (
+            <Box marginBottom={2} marginTop={2} display={"flex"} justifyContent={"center"}>
+              <Button
+                className={classes.buttonAdd}
+                data-toggle="modal"
+                data-target="#staticBackdrop"
+                onClick={handleOpenDialog}
+              >
+                <Box
+                  display={"flex"}
+                  flexDirection={"row"}
+                  justifyContent={"center"}
+                  alignItems={"center"}
+                >
+                  {i18n.t("THEMSP_P")}
+                  <AddIcon fontSize="large" />
+                </Box>
+              </Button>
+            </Box>
+          )}
+
+          {statePhieu.loaiphieu &&
+          statePhieu.loaiphieu === "NK" &&
+          stateProduct.length > 0 ? (
+            <div
+              style={{ height: 400, width: "100%" }}
+              className={classes.datagrid}
+            >
+              <DataGrid rows={stateProduct} columns={columnsNK} pageSize={5} />
+            </div>
+          ) : null}
+
+          {statePhieu.loaiphieu &&
+          statePhieu.loaiphieu === "NN" &&
+          stateProduct.length > 0 ? (
+            <div
+              style={{
+                width: "100%",
+                flex: 1,
+                display: "flex",
+                height: "500px",
+              }}
+              className={classes.datagrid}
+            >
+              <DataGrid
+                rows={stateProduct}
+                columns={columnsNN}
+                pageSize={5}
+                checkboxSelection
+                onSelectionModelChange={(newSelection) => {
+                  setSelectionModel(newSelection.selectionModel);
+                  const selectedIDs = new Set(newSelection.selectionModel);
+                  const selectedData = stateProduct.filter((row) =>
+                    selectedIDs.has(row.id)
+                  );
+                  setSelectedItems(selectedData);
+                }}
+                selectionModel={selectionModel}
+              />
+            </div>
+          ) : null}
+
+          <ProductModal
+            open={openDialog}
+            handleClose={handleCloseDialog}
+            stateFormProduct={stateFormProduct}
+            setStateFormProduct={setStateFormProduct}
+            addProduct={addproduct}
+            errorMessages={errorMessages}
+            stateCheckaccess={stateCheckaccess}
+            stateimage={stateimage}
+            stateProduct={stateProduct}
+            setStateimg={setStateimg}
+            statechinhanhdau={statechinhanhdau}
+            stateProductview={stateProductview}
+          />
+        </div>
+        {stateProduct.length > 0 && (
+          <Box display="flex" marginTop={3} justifyContent="center">
+            <Button
+              type="submit"
+              className={classes.button}
+              onClick={showAlert}
+            >
+              {isloading ? (
+                <CircularProgress color="inherit" size={24} />
+              ) : (
+                <Typography variant="body1" textTransform={"none"}>
+                  {i18n.t("BTN_GUIYEUCAU")}
+                </Typography>
+              )}
+            </Button>
+          </Box>
+        )}
       </Box>
     </>
   );

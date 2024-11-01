@@ -8,7 +8,6 @@ export const Get_all_Product_By_StoreID = async (req) => {
   } else {
     tempstoreid = req.StoreID;
   }
-
   const response = await firstValueFrom(
     Method.post(`${Url_BackEnd}/product/getallproduct`, {
       StoreID: tempstoreid,

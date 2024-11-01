@@ -433,10 +433,7 @@ const EmployeeDetailModal = ({
   };
 
   useEffect(() => {
-    console.log(
-      "data?.data?.data  ++++++++++++++++++++++++++++++++++++++ ",
-      data?.data?.data
-    );
+    console.log(data?.data?.data);
     const formattedData = data?.data?.data.map((item) => ({
       day: convertToISODate(new Date(item.createDate)),
       times: {
@@ -452,7 +449,7 @@ const EmployeeDetailModal = ({
   useEffect(() => {
     if (employee) {
       setSelectedDate(null);
-      fetchTimekeepingData();
+      // fetchTimekeepingData();
     }
   }, [employee, employee, currentMonth, statechinhanh, monthSelect]);
 

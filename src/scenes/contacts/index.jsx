@@ -524,6 +524,7 @@ const Contacts = () => {
     }
   };
   const fetchingapi = async () => {
+
     await checkAccess();
     await fetchingStore();
     // await fetchingGettAll_Length_Product_by_storeID(chinhanhdau);
@@ -1014,7 +1015,7 @@ const Contacts = () => {
     // );
   };
   return (
-    <Box m="20px">
+    <Box m="20px" height={"100%"}>
       <Header title={i18n.t("TITLEKHO")} subtitle={i18n.t("DESKHO")} />
       <Box mb={2}>
         <Typography
@@ -1063,18 +1064,8 @@ const Contacts = () => {
         </FormControl>
       </Box>
       <Box mb={2}>
-        {/* {!stateaccess && (
-          <Button
-            className={classes.buttonAdd}
-            data-toggle="modal"
-            data-target="#staticBackdrop"
-          >
-            {i18n.t("THEMSP_P")}
-          </Button>
-        )} */}
         {stateaccess ? (
           <>
-            {" "}
             <Button
               className={classes.buttonExport}
               onClick={handleExportExcel}
@@ -1085,30 +1076,6 @@ const Contacts = () => {
         ) : (
           ""
         )}
-        {/* {!isloading ? (
-          <Button className={classes.buttonDelete} onClick={handleSaveClick}>
-            {i18n.t("XOASP_P")}
-          </Button>
-        ) : (
-          <Button
-            style={{ marginLeft: "1%", backgroundColor: "grey" }}
-            className={classes.buttonDelete}
-          >
-            <i class="fa fa-spinner fa-spin mr-1"></i> Deleting..
-          </Button>
-        )} */}
-
-        {/* <Button
-          style={{ marginLeft: "1%" }}
-          className={classes.buttonEdit}
-          data-toggle="modal"
-          onClick={handleEdit}
-          data-target="#staticBackdropEdit"
-          disabled={selectionModel.length !== 1}
-        >
-          {i18n.t("DIEUCHINHSP_P")}
-        </Button> */}
-
         <div
           class="modal fade"
           id="staticBackdropEdit"
@@ -1127,16 +1094,6 @@ const Contacts = () => {
                   id="staticBackdropLabel"
                 >
                   Điều chỉnh thông tin
-                  {/* <br></br>
-                  <label htmlFor="baocao">*Báo cáo sự cố sản phẩm </label>
-                  <input
-                    checked={stateBaocao}
-                    onClick={() => {
-                      setStateBaocao(!stateBaocao);
-                    }}
-                    name="baocao"
-                    type="checkbox"
-                  ></input> */}
                 </h5>
                 <button
                   type="button"
@@ -1566,7 +1523,7 @@ const Contacts = () => {
         <br></br>
       </Box>
 
-      <Box mt={2}>
+      <Box mt={2}  height={"100%"}>
         <CategoryList
           category={stateProduct}
           statechinhanh={statechinhanh}

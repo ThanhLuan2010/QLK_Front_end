@@ -159,12 +159,11 @@ const CategoryList = ({
           : item.picture,
     }));
   return (
-    <Box mb={5} gap={2} display={"flex"} flexDirection={"row"} width={"100%"}>
+    <Box mb={5} gap={2} display={"flex"} flexDirection={"row"} width={"100%"}  height={"100%"}>
       <Box
         flex={1}
         display={"flex"}
         flexDirection={"column"}
-        justifyContent={"center"}
         alignItems={"center"}
         border={"1px solid #CECECE"}
         borderRadius={"20px"}
@@ -178,7 +177,6 @@ const CategoryList = ({
           height={"100%"}
           overflow={"auto"}
           width={"100%"}
-          className="custom-scroll"
           p={1}
         >
           {Array.from(new Set(category.map((item) => item.loai))).map(
