@@ -130,7 +130,6 @@ const EmployeeDetailModal = ({
     url: "/timekeep/get-payslip-by-staff",
     queryParams: `month=${month}&year=${year}&staffId=${employee?.id}&branch_id=${statechinhanh}`,
   });
-  console.log("🚀 ~ data:", data);
 
   const { isOpenPopover } = useAppSelector((state) => state.common);
 
@@ -619,7 +618,6 @@ const EmployeeDetailModal = ({
       </Modal>
     </>
   );
-  console.log("🚀 ~ data:", data);
 };
 
 export default EmployeeDetailModal;

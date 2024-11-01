@@ -31,16 +31,16 @@ const useGetData = ({ url = "", queryParams }) => {
     }
   }, [url, pageCurrent,  queryParams]);
 
-  const reLoad = () => {
-    fetchData(1);
-    setPageCurrent(1);
-  };
+  // const reLoad = () => {
+  //   fetchData(1);
+  //   setPageCurrent(1);
+  // };
 
   useEffect(() => {
     fetchData();
   }, [fetchData, queryParams]);
 
-  return { data, loading, error, pageCurrent, totalPages, reLoad };
+  return { data, loading, error, pageCurrent, totalPages };
 };
 
 export default useGetData;

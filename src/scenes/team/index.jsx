@@ -93,7 +93,6 @@ const Team = () => {
     setOpenModalAdd(true);
   };
 
-
   const handleCloseModal = async () => {
     setOpenModal(false);
     setSelectedEmployee(null);
@@ -103,7 +102,7 @@ const Team = () => {
     setOpenModalAdd(false);
     await fetchTimekeepingData();
   };
-  
+
   const columns = [
     {
       field: "id",
@@ -134,7 +133,11 @@ const Team = () => {
     if (statechinhanh) {
       fetchingGettAllStaft_by_branchID(statechinhanh);
     }
-  }, [statechinhanh, isDataUpdated,selectedMonth]);
+  }, [statechinhanh, isDataUpdated, selectedMonth]);
+
+  const { data: dataPaySleep } = useGetData({
+    url: `/timekeep/get-payslip-by-branch?branchId=BT001&month=10&year=2024`,
+  });
 
   const handleSelectionModelChange = (newSelectionModel) => {
     const selectedRows = newSelectionModel.map((selectedId) =>
@@ -286,64 +289,51 @@ const Team = () => {
   }, [selectedMonth, statechinhanh]);
 
   const handleExportExcel = async () => {
-    if (isLoadingTimekeeping || isInitialLoad) {
-      alert(
-        "Vui lòng chờ dữ liệu chấm công được tải xong trước khi xuất ra Excel."
-      );
-      return;
-    }
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Bảng chấm công");
+    console.log("====hjoihjo");
     const daysInMonth = new Date(
       selectedMonth.year,
       selectedMonth.month,
       0
     ).getDate();
 
-    console.log("=====daysInMonth====",)
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Bảng chấm công");
 
-    // Add title row with custom formatting
+    // Tạo tiêu đề
     const titleRow = worksheet.addRow(["BẢNG CHẤM CÔNG"]);
-    titleRow.font = { size: 16, bold: true, color: { argb: "0000000" } };
+    titleRow.font = { size: 16, bold: true, color: { argb: "000000" } };
     worksheet.mergeCells(1, 1, 1, 4 + daysInMonth);
     titleRow.alignment = { horizontal: "center" };
 
-    // Add month-year row with custom formatting
+    // Tạo hàng tháng và năm
     const monthYearRow = worksheet.addRow([
       `Tháng ${selectedMonth.month} năm ${selectedMonth.year}`,
     ]);
-    monthYearRow.font = { size: 14, bold: true, color: { argb: "0000000" } };
+    monthYearRow.font = { size: 14, bold: true, color: { argb: "000000" } };
     worksheet.mergeCells(2, 1, 2, 4 + daysInMonth);
     monthYearRow.alignment = { horizontal: "center" };
 
-    // Add header rows with custom formatting
+    // Tạo header cho các ngày trong tháng
     const headerRow1 = worksheet.addRow([
       "TT",
       "Họ tên",
       "Chức vụ",
-      "Ngày trong tháng",
-      ...Array.from({ length: daysInMonth - 1 }, () => ""),
+      ...Array.from({ length: daysInMonth }, (_, i) => `Ngày ${i + 1}`),
       "Tổng cộng",
+      "Giờ phạt",
+      "Giờ đi trễ",
+      "Giờ về sớm",
+      "Số lần đi trễ",
+      "Số lần về sớm",
+      "Số sờ tăng ca",
     ]);
     worksheet.mergeCells(3, 1, 4, 1);
     worksheet.mergeCells(3, 2, 4, 2);
     worksheet.mergeCells(3, 3, 4, 3);
     worksheet.mergeCells(3, 4, 3, 3 + daysInMonth);
     worksheet.mergeCells(3, 4 + daysInMonth, 4, 4 + daysInMonth);
-    headerRow1.alignment = { vertical: "middle", horizontal: "center" };
-    headerRow1.font = { bold: true, color: { argb: "00000000" } };
 
-    const headerRow2 = worksheet.addRow([
-      "",
-      "",
-      "",
-      ...Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`),
-      "",
-    ]);
-    headerRow2.alignment = { horizontal: "center" };
-    headerRow2.font = { bold: true, color: { argb: "00000000" } };
-
-    // Apply fill color to title and month-year rows
+    // Định dạng tiêu đề
     for (let i = 1; i <= 2; i++) {
       for (let j = 1; j <= 4 + daysInMonth; j++) {
         const cell = worksheet.getCell(i, j);
@@ -353,137 +343,112 @@ const Team = () => {
           fgColor: { argb: "FFFACE9C" },
         };
         cell.alignment = { horizontal: "center", vertical: "middle" };
-        cell.border = {
-          right: { style: "thin" },
-        };
+        cell.border = { right: { style: "thin" } };
       }
     }
 
-    // Apply fill color to header rows
-    for (let i = 3; i <= 5; i++) {
-      for (let j = 1; j <= 4 + daysInMonth; j++) {
-        const cell = worksheet.getCell(i, j);
-        cell.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFFDE2CA" },
-        };
-        cell.alignment = { horizontal: "center", vertical: "middle" };
-        cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        };
-      }
-    }
+    // Dòng tiêu đề ngày
+    const headerRow2 = worksheet.addRow([
+      "",
+      "",
+      "",
+      ...Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`),
+      "",
+    ]);
+    headerRow2.alignment = { horizontal: "center" };
+    headerRow2.font = { bold: true, color: { argb: "000000" } };
 
-    // Apply fill color to day columns
-    for (let j = 4; j <= 3 + daysInMonth; j++) {
-      const cell = worksheet.getCell(5, j);
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFF5A89A" },
-      };
-      cell.alignment = { horizontal: "center", vertical: "middle" };
-      cell.border = {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      };
-    }
+    // Xử lý từng nhân viên
+    stateStaff.forEach((staff, index) => {
+      const hours = Array(daysInMonth).fill("--"); // Điền mặc định "--" cho tất cả các ngày
+      const checkTimes = Array(daysInMonth).fill("--"); // Thời gian startCheck - endCheck trong ngày
+      let totalHours = 0;
 
-    // Process rows and apply custom formatting
-    const rows = stateStaff.map((staff, index) => {
-      const hours = Array(daysInMonth).fill(0);
-      stateTimekeep.forEach((timekeep) => {
-        if (timekeep.staffid === staff.id) {
+      // Lấy dữ liệu chấm công của từng nhân viên từ dataPayslip
+      const staffPayslip = dataPaySleep?.data.find(
+        (item) => item.user.phone === staff.phone
+      );
+      // Các biến tổng hợp cho cột bổ sung
+      let totalFinedTime = 0;
+      let totalLateTime = 0;
+      let totalEarlyTime = 0;
+      let countLateDays = 0;
+      let countEarlyDays = 0;
+      let totalOvertime = 0;
+      if (
+        staffPayslip &&
+        staffPayslip.dataPayslip &&
+        staffPayslip.dataPayslip.data
+      ) {
+        // Chuyển đổi các trường phút sang giờ
+        totalFinedTime = (staffPayslip.dataPayslip.total_minutes_fined || 0) / 60;
+        totalLateTime = (staffPayslip.dataPayslip.total_minutes_checkin_late || 0) / 60;
+        totalEarlyTime = (staffPayslip.dataPayslip.total_minutes_checkout_early || 0) / 60;
+        countLateDays = staffPayslip.dataPayslip.total_time_checkin_late || 0;
+        countEarlyDays = staffPayslip.dataPayslip.total_time_checkout_early || 0;
+        totalOvertime = (staffPayslip.dataPayslip.total_overtime || 0) / 60;
+        staffPayslip.dataPayslip.data.forEach((timekeep) => {
           const timekeepDate = new Date(timekeep.createDate);
+
           if (
             timekeepDate.getMonth() + 1 === selectedMonth.month &&
             timekeepDate.getFullYear() === selectedMonth.year
           ) {
             const day = timekeepDate.getDate();
-            let totalHours = 0;
-            let totalMinutes = 0;
-            for (let i = 0; i < timekeep.startCheck.length; i++) {
-              let startHour = 0,
-                startMinute = 0,
-                endHour = 0,
-                endMinute = 0;
-              if (
-                typeof timekeep.startCheck === "string" &&
-                typeof timekeep.endCheck === "string"
-              ) {
-                [startHour, startMinute] = timekeep.startCheck
-                  .split(":")
-                  .map(Number);
-                [endHour, endMinute] = timekeep.endCheck
-                  .split(":")
-                  .map(Number);
-              }
-              const start = new Date(0, 0, 0, startHour, startMinute);
-              const end = new Date(0, 0, 0, endHour, endMinute);
-              const diffMilliseconds = end - start;
 
-              totalHours += Math.floor(diffMilliseconds / (1000 * 60 * 60));
-              totalMinutes += Math.floor(
-                (diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
-              );
-            }
+            // Lấy số phút từ timekeep.time và chuyển đổi sang giờ
+            const diffHours = timekeep.time / 60;
 
-            let adjustedHours = totalHours + totalMinutes / 60;
-            if (
-              staff.Role === ROLE_EMPLOYEE.MANAGER.VALUE &&
-              adjustedHours >= 10
-            ) {
-              adjustedHours -= 1;
-            } else if (
-              staff.Role !== ROLE_EMPLOYEE.STAFF.VALUE &&
-              staff.Role !== ROLE_EMPLOYEE.MANAGER.VALUE &&
-              staff.Role !== ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE &&
-              adjustedHours >= 5
-            ) {
-              adjustedHours -= 1;
-            }
+            // Tính tổng giờ làm việc trong tháng
+            totalHours += diffHours;
+            hours[day - 1] = diffHours.toFixed(2); // Điền giờ làm trong ngày
 
-            hours[day - 1] = adjustedHours.toFixed(2);
+            // Kết hợp startCheck và endCheck vào mảng checkTimes
+            checkTimes[day - 1] = `${timekeep.startCheck || "--"} - ${
+              timekeep.endCheck || "--"
+            }`;
           }
-        }
+        });
+      }
+
+      // Thêm hàng vào bảng cho tổng giờ làm việc
+      const hoursRow = worksheet.addRow([
+        index + 1,
+        staff.name,
+        staff.Role,
+        ...hours,
+        totalHours.toFixed(2),
+        totalFinedTime.toFixed(2),     // Thời gian bị phạt (giờ)
+        totalLateTime.toFixed(2),      // Tổng giờ đi trễ (giờ)
+        totalEarlyTime.toFixed(2),     // Tổng giờ về sớm (giờ)
+        countLateDays,                 // Số lần đi trễ
+        countEarlyDays,                // Số lần về sớm
+        totalOvertime.toFixed(2)       // Số lần tăng ca (giờ)
+      ]);
+
+      hoursRow.alignment = { horizontal: "center" };
+      hoursRow.eachCell((cell) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
       });
 
-      const totalHours = hours.reduce((sum, val) => sum + parseFloat(val), 0);
+      // Thêm hàng vào bảng cho startCheck - endCheck
+      const checkTimesRow = worksheet.addRow([
+        "",
+        "",
+        "Thời gian",
+        ...checkTimes,
+        "",
+        
+      ]);
 
-      return {
-        TT: index + 1,
-        "Họ tên": staff.name,
-        "Chức vụ": staff.Role,
-        "Ngày trong tháng": {
-          ...hours.reduce((acc, val, idx) => {
-            acc[`Ngày ${idx + 1}`] = 1 * val === 0 ? "" : 1 * val;
-            return acc;
-          }, {}),
-        },
-        "Tổng cộng":
-          totalHours.toFixed(2) * 1 === 0 ? "" : totalHours.toFixed(2) * 1,
-      };
-    });
-
-    rows.forEach((row) => {
-      const rowData = [
-        row["TT"],
-        row["Họ tên"],
-        row["Chức vụ"],
-        ...Object.values(row["Ngày trong tháng"]),
-        row["Tổng cộng"],
-      ];
-      const addedRow = worksheet.addRow(rowData);
-      addedRow.alignment = { horizontal: "center" }; // Center align all cells in the row
-
-      // Apply border to each cell in the row
-      addedRow.eachCell((cell) => {
+      checkTimesRow.alignment = { horizontal: "center" };
+      checkTimesRow.font = { italic: true, color: { argb: "FF000000" } };
+      checkTimesRow.eachCell((cell) => {
         cell.border = {
           top: { style: "thin" },
           left: { style: "thin" },
@@ -493,14 +458,16 @@ const Team = () => {
       });
     });
 
+    // Cài đặt độ rộng của các cột
     worksheet.columns = [
       { width: 5 },
       { width: 30 },
-      { width: 30 },
-      ...Array.from({ length: daysInMonth }, () => ({ width: 5 })),
+      { width: 20 },
+      ...Array.from({ length: daysInMonth }, () => ({ width: 15 })),
       { width: 15 },
     ];
 
+    // Xuất file Excel bằng cách tạo link tải
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -509,6 +476,225 @@ const Team = () => {
     link.href = window.URL.createObjectURL(blob);
     link.download = `Bảng chấm công tháng ${selectedMonth.month} năm ${selectedMonth.year}.xlsx`;
     link.click();
+    // if (isLoadingTimekeeping || isInitialLoad) {
+    //   alert(
+    //     "Vui lòng chờ dữ liệu chấm công được tải xong trước khi xuất ra Excel."
+    //   );
+    //   return;
+    // }
+    // const workbook = new ExcelJS.Workbook();
+    // const worksheet = workbook.addWorksheet("Bảng chấm công");
+    // const daysInMonth = new Date(
+    //   selectedMonth.year,
+    //   selectedMonth.month,
+    //   0
+    // ).getDate();
+
+    // // Add title row with custom formatting
+    // const titleRow = worksheet.addRow(["BẢNG CHẤM CÔNG"]);
+    // titleRow.font = { size: 16, bold: true, color: { argb: "0000000" } };
+    // worksheet.mergeCells(1, 1, 1, 4 + daysInMonth);
+    // titleRow.alignment = { horizontal: "center" };
+
+    // // Add month-year row with custom formatting
+    // const monthYearRow = worksheet.addRow([
+    //   `Tháng ${selectedMonth.month} năm ${selectedMonth.year}`,
+    // ]);
+    // monthYearRow.font = { size: 14, bold: true, color: { argb: "0000000" } };
+    // worksheet.mergeCells(2, 1, 2, 4 + daysInMonth);
+    // monthYearRow.alignment = { horizontal: "center" };
+
+    // // Add header rows with custom formatting
+    // const headerRow1 = worksheet.addRow([
+    //   "TT",
+    //   "Họ tên",
+    //   "Chức vụ",
+    //   "Ngày trong tháng",
+    //   ...Array.from({ length: daysInMonth - 1 }, () => ""),
+    //   "Tổng cộng",
+    // ]);
+    // worksheet.mergeCells(3, 1, 4, 1);
+    // worksheet.mergeCells(3, 2, 4, 2);
+    // worksheet.mergeCells(3, 3, 4, 3);
+    // worksheet.mergeCells(3, 4, 3, 3 + daysInMonth);
+    // worksheet.mergeCells(3, 4 + daysInMonth, 4, 4 + daysInMonth);
+    // headerRow1.alignment = { vertical: "middle", horizontal: "center" };
+    // headerRow1.font = { bold: true, color: { argb: "00000000" } };
+
+    // const headerRow2 = worksheet.addRow([
+    //   "",
+    //   "",
+    //   "",
+    //   ...Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`),
+    //   "",
+    // ]);
+    // headerRow2.alignment = { horizontal: "center" };
+    // headerRow2.font = { bold: true, color: { argb: "00000000" } };
+
+    // // Apply fill color to title and month-year rows
+    // for (let i = 1; i <= 2; i++) {
+    //   for (let j = 1; j <= 4 + daysInMonth; j++) {
+    //     const cell = worksheet.getCell(i, j);
+    //     cell.fill = {
+    //       type: "pattern",
+    //       pattern: "solid",
+    //       fgColor: { argb: "FFFACE9C" },
+    //     };
+    //     cell.alignment = { horizontal: "center", vertical: "middle" };
+    //     cell.border = {
+    //       right: { style: "thin" },
+    //     };
+    //   }
+    // }
+
+    // // Apply fill color to header rows
+    // for (let i = 3; i <= 5; i++) {
+    //   for (let j = 1; j <= 4 + daysInMonth; j++) {
+    //     const cell = worksheet.getCell(i, j);
+    //     cell.fill = {
+    //       type: "pattern",
+    //       pattern: "solid",
+    //       fgColor: { argb: "FFFDE2CA" },
+    //     };
+    //     cell.alignment = { horizontal: "center", vertical: "middle" };
+    //     cell.border = {
+    //       top: { style: "thin" },
+    //       left: { style: "thin" },
+    //       bottom: { style: "thin" },
+    //       right: { style: "thin" },
+    //     };
+    //   }
+    // }
+
+    // // Apply fill color to day columns
+    // for (let j = 4; j <= 3 + daysInMonth; j++) {
+    //   const cell = worksheet.getCell(5, j);
+    //   cell.fill = {
+    //     type: "pattern",
+    //     pattern: "solid",
+    //     fgColor: { argb: "FFF5A89A" },
+    //   };
+    //   cell.alignment = { horizontal: "center", vertical: "middle" };
+    //   cell.border = {
+    //     top: { style: "thin" },
+    //     left: { style: "thin" },
+    //     bottom: { style: "thin" },
+    //     right: { style: "thin" },
+    //   };
+    // }
+
+    // // Process rows and apply custom formatting
+    // const rows = stateStaff.map((staff, index) => {
+    //   const hours = Array(daysInMonth).fill(0);
+    //   stateTimekeep.forEach((timekeep) => {
+    //     if (timekeep.staffid === staff.id) {
+    //       const timekeepDate = new Date(timekeep.createDate);
+    //       if (
+    //         timekeepDate.getMonth() + 1 === selectedMonth.month &&
+    //         timekeepDate.getFullYear() === selectedMonth.year
+    //       ) {
+    //         const day = timekeepDate.getDate();
+    //         let totalHours = 0;
+    //         let totalMinutes = 0;
+    //         for (let i = 0; i < timekeep.startCheck.length; i++) {
+    //           let startHour = 0,
+    //             startMinute = 0,
+    //             endHour = 0,
+    //             endMinute = 0;
+    //           if (
+    //             typeof timekeep.startCheck === "string" &&
+    //             typeof timekeep.endCheck === "string"
+    //           ) {
+    //             [startHour, startMinute] = timekeep.startCheck
+    //               .split(":")
+    //               .map(Number);
+    //             [endHour, endMinute] = timekeep.endCheck.split(":").map(Number);
+    //           }
+    //           const start = new Date(0, 0, 0, startHour, startMinute);
+    //           const end = new Date(0, 0, 0, endHour, endMinute);
+    //           const diffMilliseconds = end - start;
+
+    //           totalHours += Math.floor(diffMilliseconds / (1000 * 60 * 60));
+    //           totalMinutes += Math.floor(
+    //             (diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
+    //           );
+    //         }
+
+    //         let adjustedHours = totalHours + totalMinutes / 60;
+    //         if (
+    //           staff.Role === ROLE_EMPLOYEE.MANAGER.VALUE &&
+    //           adjustedHours >= 10
+    //         ) {
+    //           adjustedHours -= 1;
+    //         } else if (
+    //           staff.Role !== ROLE_EMPLOYEE.STAFF.VALUE &&
+    //           staff.Role !== ROLE_EMPLOYEE.MANAGER.VALUE &&
+    //           staff.Role !== ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE &&
+    //           adjustedHours >= 5
+    //         ) {
+    //           adjustedHours -= 1;
+    //         }
+
+    //         hours[day - 1] = adjustedHours.toFixed(2);
+    //       }
+    //     }
+    //   });
+
+    //   const totalHours = hours.reduce((sum, val) => sum + parseFloat(val), 0);
+
+    //   return {
+    //     TT: index + 1,
+    //     "Họ tên": staff.name,
+    //     "Chức vụ": staff.Role,
+    //     "Ngày trong tháng": {
+    //       ...hours.reduce((acc, val, idx) => {
+    //         acc[`Ngày ${idx + 1}`] = 1 * val === 0 ? "" : 1 * val;
+    //         return acc;
+    //       }, {}),
+    //     },
+    //     "Tổng cộng":
+    //       totalHours.toFixed(2) * 1 === 0 ? "" : totalHours.toFixed(2) * 1,
+    //   };
+    // });
+
+    // rows.forEach((row) => {
+    //   const rowData = [
+    //     row["TT"],
+    //     row["Họ tên"],
+    //     row["Chức vụ"],
+    //     ...Object.values(row["Ngày trong tháng"]),
+    //     row["Tổng cộng"],
+    //   ];
+    //   const addedRow = worksheet.addRow(rowData);
+    //   addedRow.alignment = { horizontal: "center" }; // Center align all cells in the row
+
+    //   // Apply border to each cell in the row
+    //   addedRow.eachCell((cell) => {
+    //     cell.border = {
+    //       top: { style: "thin" },
+    //       left: { style: "thin" },
+    //       bottom: { style: "thin" },
+    //       right: { style: "thin" },
+    //     };
+    //   });
+    // });
+
+    // worksheet.columns = [
+    //   { width: 5 },
+    //   { width: 30 },
+    //   { width: 30 },
+    //   ...Array.from({ length: daysInMonth }, () => ({ width: 5 })),
+    //   { width: 15 },
+    // ];
+
+    // const buffer = await workbook.xlsx.writeBuffer();
+    // const blob = new Blob([buffer], {
+    //   type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    // });
+    // const link = document.createElement("a");
+    // link.href = window.URL.createObjectURL(blob);
+    // link.download = `Bảng chấm công tháng ${selectedMonth.month} năm ${selectedMonth.year}.xlsx`;
+    // link.click();
   };
 
   const handleExportExcelCines = async () => {
