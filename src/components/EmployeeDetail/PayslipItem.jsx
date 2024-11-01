@@ -7,9 +7,6 @@ import { Box } from "@mui/system";
 
 const PayslipItem = ({ data }) => {
   const {
-    TaskAltIcon,
-    ErrorOutlineIcon,
-    AlarmOnIcon,
     ReportProblemIcon,
     AccessTimeIcon,
     AlarmOffIcon,
@@ -19,11 +16,13 @@ const PayslipItem = ({ data }) => {
   } = icons;
 
   return (
-    <Box sx={{
-      display: { xs: "none", sm: "block", md: "block", lg: "block" },
-      marginLeft: { xs: "none", sm: "12px", md: "0px", lg: "0px" },
-      fontSize: { xs: "12px", sm: "12px", md: "12px", lg: "14px" }
-    }} >
+    <Box
+      sx={{
+        display: { xs: "none", sm: "block", md: "block", lg: "block" },
+        marginLeft: { xs: "none", sm: "12px", md: "0px", lg: "0px" },
+        fontSize: { xs: "12px", sm: "12px", md: "12px", lg: "14px" },
+      }}
+    >
       <div>
         <table style={{ width: "100%" }}>
           <tr style={{ display: "flex", marginBottom: 20 }}>
@@ -173,7 +172,7 @@ const PayslipItem = ({ data }) => {
             style={{
               fontSize: 16,
               color: "gray",
-              fontWeight: "bold"
+              fontWeight: "bold",
             }}
           >
             {i18n.t("TOTAL")}
@@ -182,7 +181,7 @@ const PayslipItem = ({ data }) => {
             style={{
               fontSize: 16,
               color: "gray",
-              fontWeight: "bold"
+              fontWeight: "bold",
             }}
           >
             {convertMinutes(data?.total)}

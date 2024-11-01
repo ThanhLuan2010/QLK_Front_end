@@ -128,9 +128,10 @@ const EmployeeDetailModal = ({
   const { month, year } = handleGetDayTime();
   const { data, loading } = useGetData({
     url: "/timekeep/get-payslip-by-staff",
-    // queryParams: `month=${month}&year=${year}&staffId=${employee?.id}`,
     queryParams: `month=${month}&year=${year}&staffId=${employee?.id}&branch_id=${statechinhanh}`,
   });
+  console.log("🚀 ~ data:", data);
+
   const { isOpenPopover } = useAppSelector((state) => state.common);
 
   useEffect(() => {
@@ -205,8 +206,8 @@ const EmployeeDetailModal = ({
     if (view === "month") {
       const dayData = monthData.filter((d) => {
         const isTrue =
-          new Date(d.day).getTime() ==
-          new Date(convertToISODate(date)).getTime();
+          new Date(d.day).setHours(0, 0, 0, 0) ==
+          new Date(convertToISODate(date)).setHours(0, 0, 0, 0);
         return isTrue;
       });
 
@@ -265,10 +266,6 @@ const EmployeeDetailModal = ({
     );
     setDailyTimes(newTimes);
   };
-
-  const hasEmptyFields = dailyTimes.some(
-    (time) => time.checkIn === "" || time.checkOut === ""
-  );
 
   useEffect(() => {
     if (multiDay) {
@@ -622,6 +619,7 @@ const EmployeeDetailModal = ({
       </Modal>
     </>
   );
+  console.log("🚀 ~ data:", data);
 };
 
 export default EmployeeDetailModal;
