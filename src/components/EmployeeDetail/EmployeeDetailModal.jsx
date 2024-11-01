@@ -138,8 +138,6 @@ const EmployeeDetailModal = ({
     queryParams: `month=${monthSelect}&year=${year}&staffId=${employee?.id}&branch_id=${statechinhanh}`,
   });
 
-  console.log("🚀 ~ data:", data);
-
   useEffect(() => {}, [monthSelect]);
 
   const { isOpenPopover } = useAppSelector((state) => state.common);
