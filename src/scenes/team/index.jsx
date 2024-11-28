@@ -289,7 +289,6 @@ const Team = () => {
   }, [selectedMonth, statechinhanh]);
 
   const handleExportExcel = async () => {
-    console.log("====hjoihjo");
     const daysInMonth = new Date(
       selectedMonth.year,
       selectedMonth.month,
