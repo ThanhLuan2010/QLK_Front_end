@@ -126,10 +126,19 @@ const EmployeeDetailModal = ({
   ];
 
   const { month, year } = handleGetDayTime();
-  const { data, loading } = useGetData({
+
+  const [monthSelect, setMonthSelect] = useState(undefined);
+
+  useEffect(() => {
+    setMonthSelect(month);
+  }, [month]);
+
+  const { data, loading, reload } = useGetData({
     url: "/timekeep/get-payslip-by-staff",
-    queryParams: `month=${month}&year=${year}&staffId=${employee?.id}&branch_id=${statechinhanh}`,
+    queryParams: `month=${monthSelect}&year=${year}&staffId=${employee?.id}&branch_id=${statechinhanh}`,
   });
+
+  useEffect(() => {}, [monthSelect]);
 
   const { isOpenPopover } = useAppSelector((state) => state.common);
 
@@ -149,46 +158,298 @@ const EmployeeDetailModal = ({
     }
   }, [employee]);
 
+  const handleSubmit = async () => {
+    await HandleEditStaff(EditStaffForm);
+    alert("Cập nhật thành công!");
+  };
+
+  const handleFileChange = (e, setImageFile) => {
+    setImageFile(e.target.files[0]);
+  };
+
+  const handleCreateTimeKeeping = async (
+    employeeId,
+    branchID,
+    name,
+    date,
+    checkIn,
+    checkOut
+  ) => {
+    const response = await CreateTimeKeeping(
+      employeeId,
+      branchID,
+      name,
+      date,
+      checkIn,
+      checkOut,
+      0,
+      new Date()
+    );
+    return response;
+  };
+
+  const handleUpdateTimeKeeping = async (
+    id,
+    startCheck,
+    endCheck,
+    createDate
+  ) => {
+    const response = await UpdateTimeKeeping(
+      id,
+      startCheck,
+      endCheck,
+      createDate
+    );
+    return response;
+  };
+
+  const formatDate = (date) => {
+    return format(date, "yyyy-MM-dd");
+  };
+
+  const validateTimes = (times) => {
+    const minCheckIn = "07:00";
+
+    for (let i = 0; i < times?.length; i++) {
+      const { checkIn, checkOut } = times[i];
+      if (checkIn < minCheckIn) {
+        alert("Giờ check-in phải sau 07:00");
+        return false;
+      }
+      if (checkOut <= checkIn && checkOut !== "00:00") {
+        alert("Giờ check-out phải sau giờ check-in.");
+        return false;
+      }
+      for (let j = i + 1; j < times?.length; j++) {
+        if (
+          (times[j].checkIn >= checkIn && times[j].checkIn <= checkOut) ||
+          (times[j].checkOut >= checkIn && times[j].checkOut <= checkOut)
+        ) {
+          alert("Thời gian chấm công không được trùng lặp.");
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  const handleUpdateTime = async () => {
+    if (
+      dailyTimes?.length === 0 ||
+      dailyTimes.every((time) => time.checkIn === "" && time.checkOut === "")
+    ) {
+      if (
+        !window.confirm(
+          "Các mốc chấm công đều rỗng. Bạn có chắc muốn xóa hết ngày công không?"
+        )
+      ) {
+        return;
+      }
+    }
+
+    if (!validateTimes(dailyTimes)) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const formattedDate = formatDate(selectedDate);
+      const selectedDateFormatted = format(selectedDate, "yyyy-MM-dd");
+
+      const timekeepingEntry = timekeepingData.find(
+        (item) =>
+          format(new Date(item.createDate), "yyyy-MM-dd") ===
+          selectedDateFormatted
+      );
+
+      if (!timekeepingEntry) {
+        // Ngày chưa có chấm công, gọi API tạo mới chấm công trước
+        const response = await handleCreateTimeKeeping(
+          employee.id,
+          statechinhanh,
+          employee.name,
+          "..",
+          dailyTimes[0].checkIn,
+          dailyTimes[0].checkOut === "00:00" ? "24:00" : dailyTimes[0].checkOut,
+          0,
+          format(formattedDate, "yyyy-MM-dd")
+        );
+        if (response) {
+          const timeStart = [];
+          const timeEnd = [];
+          for (const time of dailyTimes) {
+            timeStart.push(time.checkIn);
+            timeEnd.push(time.checkOut === "00:00" ? "24:00" : time.checkOut);
+          }
+          await handleUpdateTimeKeeping(
+            response.timekeep._id,
+            timeStart,
+            timeEnd,
+            format(formattedDate, "yyyy-MM-dd")
+          );
+
+          // Cập nhật monthData với dữ liệu mới
+          const newDayData = {
+            day: convertToISODate(new Date(response.timekeep.createDate)),
+            times: dailyTimes,
+          };
+          setMonthData((prevData) => [...prevData, newDayData]);
+          setTimekeepingData((prevData) => [...prevData, response.timekeep]); // Cập nhật thêm ở đây
+        }
+      } else {
+        const timeStart = [];
+        const timeEnd = [];
+        for (const time of dailyTimes) {
+          timeStart.push(time.checkIn);
+          timeEnd.push(time.checkOut === "00:00" ? "24:00" : time.checkOut);
+        }
+        await handleUpdateTimeKeeping(
+          timekeepingEntry._id,
+          timeStart,
+          timeEnd,
+          format(formattedDate, "yyyy-MM-dd")
+        );
+        const updatedData = monthData.map((d) =>
+          format(d.day, "yyyy-MM-dd") === selectedDateFormatted
+            ? { ...d, times: dailyTimes }
+            : d
+        );
+        setMonthData(updatedData);
+      }
+
+      // Lấy dữ liệu mới sau khi cập nhật
+      await fetchTimekeepingData();
+      await updateTimekeepingData();
+      setIsSuccess(true);
+      setTimeout(() => setIsSuccess(false), 500);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // useEffect(() => {
+  //   if (data && data.data) {
+  //     // Chuyển đổi dữ liệu từ API sang định dạng cho monthData
+  //     const formattedData = data.map((item) => ({
+  //       day: convertToISODate(new Date(item.createDate)), // Định dạng ngày
+  //       times: {
+  //         checkIn: item.startCheck,
+  //         checkOut: item.endCheck,
+  //       },
+  //     }));
+
+  //     // Cập nhật monthData với dữ liệu đã định dạng
+  //     setMonthData(formattedData);
+  //   }
+  // }, [data]);
+
+  const handleUpdateMultipleTimeKeeping = async () => {
+    if (
+      dailyTimes?.length === 0 ||
+      dailyTimes.every((time) => time.checkIn === "" && time.checkOut === "")
+    ) {
+      if (
+        !window.confirm(
+          "Các mốc chấm công đều rỗng. Bạn có chắc muốn xóa hết ngày công không?"
+        )
+      ) {
+        return;
+      }
+    }
+
+    if (!validateTimes(dailyTimes)) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const timeStart = [];
+      const timeEnd = [];
+      for (const time of dailyTimes) {
+        timeStart.push(time.checkIn);
+        timeEnd.push(time.checkOut === "00:00" ? "24:00" : time.checkOut);
+      }
+      const response = await UpdateMultipleTimeKeeping(
+        employee.id,
+        statechinhanh,
+        employee.name,
+        "..",
+        timeStart,
+        timeEnd,
+        formatDate(dateRange[0]),
+        formatDate(dateRange[1])
+      );
+
+      if (response) {
+        await fetchTimekeepingData();
+      }
+      setIsSuccess(true);
+      setTimeout(() => setIsSuccess(false), 500);
+      setDateRange([]);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleClickOutside = (e) => {
     if (modalRef.current && !modalRef.current.contains(e.target)) {
       setSelectedDate(null);
     }
   };
 
-  // const fetchTimekeepingData = async () => {
-  //   setIsCalendarLoading(true);
-  //   try {
-  //     const start = convertToISODate(startOfMonth(currentMonth));
-  //     const end = convertToISODate(endOfMonth(currentMonth));
-  //     if (employee) {
-  //       const res = await Get_TIMEKEEPING_By_StaffID(start, end, employee.id);
-  //       if (res && res.length > 0) {
-  //         setTimekeepingData(res);
-  //         const formattedData = res.map((item) => ({
-  //           day: convertToISODate(new Date(item.createDate)),
-  //           times: {
-  //             checkIn: item?.startCheck,
-  //             checkOut: item?.endCheck,
-  //           },
-  //         }));
-  //         setMonthData(formattedData);
-  //       } else {
-  //         setTimekeepingData([]);
-  //         setMonthData([]);
-  //       }
-  //     }
-  //   } catch (error) {
-  //   } finally {
-  //     setIsCalendarLoading(false);
-  //   }
-  // };
+  const fetchTimekeepingData = async () => {
+    setIsCalendarLoading(true);
+    try {
+      const start = convertToISODate(startOfMonth(currentMonth));
+      const end = convertToISODate(endOfMonth(currentMonth));
+      if (employee) {
+        const res = await Get_TIMEKEEPING_By_StaffID(start, end, employee.id);
+        if (res && res?.length > 0) {
+          setTimekeepingData(res);
+          const formattedData = res.map((item) => ({
+            day: convertToISODate(new Date(item.createDate)),
+            times: {
+              checkIn: item?.startCheck,
+              checkOut: item?.endCheck,
+            },
+          }));
+          console.log("🚀 ~ formattedData ~ formattedData:", formattedData);
+          setMonthData(formattedData);
+        } else {
+          setTimekeepingData([]);
+          setMonthData([]);
+        }
+      }
+    } catch (error) {
+    } finally {
+      setIsCalendarLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    console.log(data?.data?.data);
+    const formattedData = data?.data?.data.map((item) => ({
+      day: convertToISODate(new Date(item.createDate)),
+      times: {
+        checkIn: item?.startCheck,
+        checkOut: item?.endCheck,
+      },
+    }));
+    console.log("🚀 ~ formattedData ~ formattedData:", formattedData);
+    setMonthData(formattedData);
+    console.log("data", data?.data?.data);
+  }, [monthSelect, data]);
 
   useEffect(() => {
     if (employee) {
       setSelectedDate(null);
       // fetchTimekeepingData();
     }
-  }, [employee, employee, currentMonth, statechinhanh]);
+  }, [employee, employee, currentMonth, statechinhanh, monthSelect]);
 
   useEffect(() => {
     if (open) {
@@ -201,47 +462,37 @@ const EmployeeDetailModal = ({
     };
   }, [open]);
 
+  // console.log("monthData =========>    ", monthData);
+
   const renderCalendarTileContent = ({ date, view }) => {
+    console.log("month data : ", monthData);
+
+    // Kiểm tra chỉ áp dụng cho chế độ xem "month"
     if (view === "month") {
-      const dayData = monthData.filter((d) => {
-        const isTrue =
-          new Date(d.day).setHours(0, 0, 0, 0) ==
-          new Date(convertToISODate(date)).setHours(0, 0, 0, 0);
-        return isTrue;
+      // Lọc dữ liệu để tìm ngày khớp với date hiện tại của tile
+      const dayData = monthData?.filter((d) => {
+        return (
+          new Date(d.day).setHours(0, 0, 0, 0) === date.setHours(0, 0, 0, 0)
+        );
       });
 
       return (
         <>
           {dayData?.length > 0 && (
-            <Box>
-              <Box>
-                <div
-                  style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
-                >
-                  {dayData[0]?.times.checkIn}
-                </div>
-                <div
-                  style={{
-                    fontSize: 20,
-                    color: "gray",
-                    marginTop: -10,
-                    marginBottom: -8,
-                  }}
-                >
-                  <ArrowDownwardIcon
-                    style={{
-                      fontSize: "0.8rem",
-                      color: "#E41395",
-                      marginBottom: 2,
-                    }}
-                  ></ArrowDownwardIcon>
-                </div>
-                <div
-                  style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
-                >
-                  {dayData[0]?.times.checkOut ? dayData[0]?.times.checkOut : ""}
-                </div>
-              </Box>
+            <Box display="flex" flexDirection="column" alignItems="center">
+              <div
+                style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
+              >
+                {dayData[0].times.checkIn}
+              </div>
+              <ArrowDownwardIcon
+                style={{ fontSize: "0.8rem", color: "#E41395" }}
+              />
+              <div
+                style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
+              >
+                {dayData[0].times.checkOut || ""}
+              </div>
             </Box>
           )}
         </>
@@ -255,7 +506,7 @@ const EmployeeDetailModal = ({
   };
 
   const handleDeleteTimeSlot = (index) => {
-    const newTimes = dailyTimes.filter((_, i) => i !== index);
+    const newTimes = dailyTimes?.filter((_, i) => i !== index);
     setDailyTimes(newTimes);
   };
 
@@ -268,12 +519,12 @@ const EmployeeDetailModal = ({
 
   useEffect(() => {
     if (multiDay) {
-      const filteredData = monthData.filter((d) =>
+      const filteredData = monthData?.filter((d) =>
         isWithinInterval(d.day, { start: dateRange[0], end: dateRange[1] })
       );
 
-      const minTimes = filteredData.length
-        ? Math.min(...filteredData.map((d) => d.times.length))
+      const minTimes = filteredData?.length
+        ? Math.min(...filteredData.map((d) => d.times?.length))
         : 0;
 
       const resetTimes = Array.from(
@@ -361,7 +612,7 @@ const EmployeeDetailModal = ({
   if (!employee) return null;
 
   const handleOpenPopover = (event, value) => {
-    const dayData = monthData.filter((d) => {
+    const dayData = monthData?.filter((d) => {
       return (
         new Date(d.day).getTime() ===
         new Date(convertToISODate(value)).getTime()
@@ -377,6 +628,14 @@ const EmployeeDetailModal = ({
   const handleClose = () => {
     setAnchorEl(null);
     dispatch(doSetIsOpenPopover(false));
+  };
+
+  const handleMonthChange = ({ activeStartDate, view }) => {
+    if (view === "month") {
+      console.log("Tháng đã thay đổi:", activeStartDate.getMonth() + 1);
+      setMonthSelect(activeStartDate.getMonth() + 1);
+      reload();
+    }
   };
 
   return (
@@ -516,6 +775,7 @@ const EmployeeDetailModal = ({
                     }}
                   >
                     <Calendar
+                      onActiveStartDateChange={handleMonthChange}
                       value={multiDay ? dateRange : selectedDate}
                       tileContent={renderCalendarTileContent}
                       onClickDay={(value, event) =>
@@ -533,7 +793,7 @@ const EmployeeDetailModal = ({
                   mt={2}
                   paddingX={3}
                 >
-                  {dailyTimes.length > 0 &&
+                  {dailyTimes?.length > 0 &&
                     dailyTimes.map((time, index) => (
                       <TimeKeepingLabel
                         key={index}

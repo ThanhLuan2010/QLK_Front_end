@@ -289,7 +289,6 @@ const Team = () => {
   }, [selectedMonth, statechinhanh]);
 
   const handleExportExcel = async () => {
-    console.log("====hjoihjo");
     const daysInMonth = new Date(
       selectedMonth.year,
       selectedMonth.month,
@@ -1068,6 +1067,7 @@ const Team = () => {
     url: "/Branch/admin/getallbranch/",
   });
 
+  console.log("🚀 ~ fetchingBranch ~ objBranch:", dataBranch)
   useEffect(() => {
     (async () => {
       dispatch(doSetBranch(dataBranch?.All_Branch));
@@ -1077,7 +1077,7 @@ const Team = () => {
   const fetchingBranch = async () => {
     if (checkaccess || checkaccess === "true") {
       const objBranch = dataBranch?.All_Branch;
-      // console.log("🚀 ~ fetchingBranch ~ objBranch:", objBranch)
+    
 
       setStateBranch(objBranch);
       chinhanhdau = objBranch[0].branchID;
