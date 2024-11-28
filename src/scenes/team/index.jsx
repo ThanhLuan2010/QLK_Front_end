@@ -1010,7 +1010,7 @@ const Team = () => {
   const { data: dataBranch, loading } = useGetData({
     url: "/Branch/admin/getallbranch/",
   });
-  // console.log("🚀 ~ Team ~ dataBranch:", dataBranch);
+  console.log("🚀 ~ Team ~ dataBranch:", dataBranch);
   useEffect(() => {
     (async () => {
       dispatch(doSetBranch(dataBranch?.All_Branch));
