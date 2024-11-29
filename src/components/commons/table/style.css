@@ -1,5 +1,5 @@
 .table-container {
-  max-height: 160px;
+  max-height: 360px;
   overflow-y: scroll;
   width: 100%;
   display: block;
@@ -10,9 +10,11 @@
   display: none;
 }
 
-.table-container {
+/* .table-container {
   scrollbar-width: none;
-}
+  background-color: red;
+  height: 100%;
+} */
 
 .table-detail-tracking {
   width: 100%;

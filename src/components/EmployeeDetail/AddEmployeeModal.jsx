@@ -267,9 +267,9 @@ const AddEmployeeModal = ({ open, onClose, statechinhanh, updateStaff }) => {
                 register={register}
                 id="bankName"
                 errors={formErrors}
-                validate={{
-                  required: i18n.t("FIELD_REQUIRED"),
-                }}
+                // validate={{
+                //   required: i18n.t("FIELD_REQUIRED"),
+                // }}
                 option={options}
               ></InputSelect>
               <InputForm
@@ -277,13 +277,13 @@ const AddEmployeeModal = ({ open, onClose, statechinhanh, updateStaff }) => {
                 register={register}
                 id="AccountBank"
                 errors={formErrors}
-                validate={{
-                  required: i18n.t("FIELD_REQUIRED"),
-                  pattern: {
-                    value: /[0-9]/,
-                    message: i18n.t("NUMBER_REQUIRED"),
-                  },
-                }}
+                // validate={{
+                //   required: i18n.t("FIELD_REQUIRED"),
+                //   pattern: {
+                //     value: /[0-9]/,
+                //     message: i18n.t("NUMBER_REQUIRED"),
+                //   },
+                // }}
               ></InputForm>
               <Box
                 justifyContent={"center"}

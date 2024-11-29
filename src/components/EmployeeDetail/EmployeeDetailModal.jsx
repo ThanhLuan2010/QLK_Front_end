@@ -1,71 +1,29 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  Modal,
-  IconButton,
-  Backdrop,
-  CircularProgress,
-  useTheme,
-} from "@mui/material";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
-import "./style.css";
-import { format, isWithinInterval, startOfMonth, endOfMonth } from "date-fns";
-import "react-datepicker/dist/react-datepicker.css";
-import EmployeeDetail from "./EmployeeDetail";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
-import { HandleEditStaff } from "../../scenes/team/handlestaff";
-import { toast } from "react-toastify";
-import {
-  CreateTimeKeeping,
-  Get_TIMEKEEPING_By_StaffID,
-  UpdateTimeKeeping,
-  UpdateMultipleTimeKeeping,
-} from "../../scenes/team/handleTimekeeps";
-import { saveAs } from "file-saver";
-import TimeKeepingLabel from "./TimeKeepingLabel";
-import i18n from "../../i18n/i18n";
-import { icons } from "../../utils/icons";
-import {
-  convertMinutes,
-  convertToISODate,
-  handleGetDayTime,
-} from "../../helper";
-import useGetData from "../../hook/fetchData";
-import PayslipItem from "./PayslipItem";
-import { CardCustom, PopoverCustom, TableCustom } from "../commons";
+import { Box, Button, IconButton, Modal, Typography } from "@mui/material";
 import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
+import React, { useEffect, useRef, useState } from "react";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import "react-datepicker/dist/react-datepicker.css";
+import { toast } from "react-toastify";
+import { convertToISODate, handleGetDayTime } from "../../helper";
+import useGetData from "../../hook/fetchData";
 import { useAppDispatch, useAppSelector } from "../../hook/reduxHooks";
+import i18n from "../../i18n/i18n";
 import {
   doSetDataInPopover,
   doSetIsOpenPopover,
 } from "../../store/slices/commonSlice";
+import { icons } from "../../utils/icons";
+import { CardCustom, PopoverCustom, TableCustom } from "../commons";
+import EmployeeDetail from "./EmployeeDetail";
+import PayslipItem from "./PayslipItem";
 import PayslipList from "./PayslipList";
+import "./style.css";
+import TimeKeepingLabel from "./TimeKeepingLabel";
 
-const TITLE_PAYSLIP = [
-  i18n.t("TOTAL_OVERTIME"),
-  i18n.t("TOTAL_MINUTES_CHECKIN_LATER"),
-  i18n.t("TOTAL_MINUTES_MINUS"),
-  i18n.t("TOTAL_TIME"),
-  i18n.t("TOTAL_MINUTES_CHECKOUT_EARLY"),
-  i18n.t("TOTAL_TIME_CHECKIN_LATER"),
-  i18n.t("TOTAL_TIME_CHECKOUT_EARLY"),
-  i18n.t("TOTAL"),
-];
-
-const KEY_PAYSLIP = [
-  "total_overtime",
-  "total_minutes_checkin_late",
-  "total_minutes_fined",
-  "total_time",
-  "total_minutes_checkout_early",
-  "total_time_checkin_late",
-  "total_time_checkout_early",
-  "total",
-];
 const EmployeeDetailModal = ({
   open,
   onClose,
@@ -74,59 +32,15 @@ const EmployeeDetailModal = ({
   updateTimekeepingData,
   onUpdateData,
 }) => {
-  const theme = useTheme();
   const dispatch = useAppDispatch();
   const classes = EmployeeDetail();
   const [selectedDate, setSelectedDate] = useState(null);
-  const [multiDay, setMultiDay] = useState(false);
-  const [dateRange, setDateRange] = useState([]);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [isCalendarLoading, setIsCalendarLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [monthData, setMonthData] = useState([]);
   const [dailyTimes, setDailyTimes] = useState([{ checkIn: "", checkOut: "" }]);
   const modalRef = useRef(null);
-  const [timekeepingData, setTimekeepingData] = useState([]);
-  const [showEmployeeInfo, setShowEmployeeInfo] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [EditStaffForm, setEditStaffForm] = useState({
-    name: "",
-    phone: "",
-    Role: "",
-    branchID: "",
-    AccountBank: "",
-    id: "",
-    ngayvao: "",
-    picture: "",
-    pictureTwo: "",
-  });
-
-  const {
-    AlarmAddIcon,
-    HistoryIcon,
-    AvTimerIcon,
-    AlarmIcon,
-    ScheduleIcon,
-    AlarmOffIcon,
-    HistoryToggleOffIcon,
-    AlarmOnIcon,
-    ArrowDownwardIcon,
-  } = icons;
-
-  const ICONS_PAYSLIP = [
-    AlarmAddIcon,
-    HistoryIcon,
-    AvTimerIcon,
-    AlarmIcon,
-    ScheduleIcon,
-    AlarmOffIcon,
-    HistoryToggleOffIcon,
-    AlarmOnIcon,
-  ];
-
+  const { ArrowDownwardIcon } = icons;
   const { month, year } = handleGetDayTime();
-
   const [monthSelect, setMonthSelect] = useState(undefined);
 
   useEffect(() => {
@@ -138,262 +52,11 @@ const EmployeeDetailModal = ({
     queryParams: `month=${monthSelect}&year=${year}&staffId=${employee?.id}&branch_id=${statechinhanh}`,
   });
 
-  useEffect(() => {}, [monthSelect]);
+  useEffect(() => {
+    reload();
+  }, [monthSelect, employee?.id]);
 
   const { isOpenPopover } = useAppSelector((state) => state.common);
-
-  useEffect(() => {
-    if (employee) {
-      setEditStaffForm({
-        name: employee.name || "",
-        phone: employee.phone || "",
-        Role: employee.Role || "",
-        branchID: employee.branchID || "",
-        AccountBank: employee.AccountBank || "",
-        id: employee.id || "",
-        ngayvao: employee.ngayvao || "",
-        picture: employee.picture || "",
-        pictureTwo: employee.pictureTwo || "",
-      });
-    }
-  }, [employee]);
-
-  const handleSubmit = async () => {
-    await HandleEditStaff(EditStaffForm);
-    alert("Cập nhật thành công!");
-  };
-
-  const handleFileChange = (e, setImageFile) => {
-    setImageFile(e.target.files[0]);
-  };
-
-  const handleCreateTimeKeeping = async (
-    employeeId,
-    branchID,
-    name,
-    date,
-    checkIn,
-    checkOut
-  ) => {
-    const response = await CreateTimeKeeping(
-      employeeId,
-      branchID,
-      name,
-      date,
-      checkIn,
-      checkOut,
-      0,
-      new Date()
-    );
-    return response;
-  };
-
-  const handleUpdateTimeKeeping = async (
-    id,
-    startCheck,
-    endCheck,
-    createDate
-  ) => {
-    const response = await UpdateTimeKeeping(
-      id,
-      startCheck,
-      endCheck,
-      createDate
-    );
-    return response;
-  };
-
-  const formatDate = (date) => {
-    return format(date, "yyyy-MM-dd");
-  };
-
-  const validateTimes = (times) => {
-    const minCheckIn = "07:00";
-
-    for (let i = 0; i < times?.length; i++) {
-      const { checkIn, checkOut } = times[i];
-      if (checkIn < minCheckIn) {
-        alert("Giờ check-in phải sau 07:00");
-        return false;
-      }
-      if (checkOut <= checkIn && checkOut !== "00:00") {
-        alert("Giờ check-out phải sau giờ check-in.");
-        return false;
-      }
-      for (let j = i + 1; j < times?.length; j++) {
-        if (
-          (times[j].checkIn >= checkIn && times[j].checkIn <= checkOut) ||
-          (times[j].checkOut >= checkIn && times[j].checkOut <= checkOut)
-        ) {
-          alert("Thời gian chấm công không được trùng lặp.");
-          return false;
-        }
-      }
-    }
-    return true;
-  };
-
-  const handleUpdateTime = async () => {
-    if (
-      dailyTimes?.length === 0 ||
-      dailyTimes.every((time) => time.checkIn === "" && time.checkOut === "")
-    ) {
-      if (
-        !window.confirm(
-          "Các mốc chấm công đều rỗng. Bạn có chắc muốn xóa hết ngày công không?"
-        )
-      ) {
-        return;
-      }
-    }
-
-    if (!validateTimes(dailyTimes)) {
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const formattedDate = formatDate(selectedDate);
-      const selectedDateFormatted = format(selectedDate, "yyyy-MM-dd");
-
-      const timekeepingEntry = timekeepingData.find(
-        (item) =>
-          format(new Date(item.createDate), "yyyy-MM-dd") ===
-          selectedDateFormatted
-      );
-
-      if (!timekeepingEntry) {
-        // Ngày chưa có chấm công, gọi API tạo mới chấm công trước
-        const response = await handleCreateTimeKeeping(
-          employee.id,
-          statechinhanh,
-          employee.name,
-          "..",
-          dailyTimes[0].checkIn,
-          dailyTimes[0].checkOut === "00:00" ? "24:00" : dailyTimes[0].checkOut,
-          0,
-          format(formattedDate, "yyyy-MM-dd")
-        );
-        if (response) {
-          const timeStart = [];
-          const timeEnd = [];
-          for (const time of dailyTimes) {
-            timeStart.push(time.checkIn);
-            timeEnd.push(time.checkOut === "00:00" ? "24:00" : time.checkOut);
-          }
-          await handleUpdateTimeKeeping(
-            response.timekeep._id,
-            timeStart,
-            timeEnd,
-            format(formattedDate, "yyyy-MM-dd")
-          );
-
-          // Cập nhật monthData với dữ liệu mới
-          const newDayData = {
-            day: convertToISODate(new Date(response.timekeep.createDate)),
-            times: dailyTimes,
-          };
-          setMonthData((prevData) => [...prevData, newDayData]);
-          setTimekeepingData((prevData) => [...prevData, response.timekeep]); // Cập nhật thêm ở đây
-        }
-      } else {
-        const timeStart = [];
-        const timeEnd = [];
-        for (const time of dailyTimes) {
-          timeStart.push(time.checkIn);
-          timeEnd.push(time.checkOut === "00:00" ? "24:00" : time.checkOut);
-        }
-        await handleUpdateTimeKeeping(
-          timekeepingEntry._id,
-          timeStart,
-          timeEnd,
-          format(formattedDate, "yyyy-MM-dd")
-        );
-        const updatedData = monthData.map((d) =>
-          format(d.day, "yyyy-MM-dd") === selectedDateFormatted
-            ? { ...d, times: dailyTimes }
-            : d
-        );
-        setMonthData(updatedData);
-      }
-
-      // Lấy dữ liệu mới sau khi cập nhật
-      await fetchTimekeepingData();
-      await updateTimekeepingData();
-      setIsSuccess(true);
-      setTimeout(() => setIsSuccess(false), 500);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // useEffect(() => {
-  //   if (data && data.data) {
-  //     // Chuyển đổi dữ liệu từ API sang định dạng cho monthData
-  //     const formattedData = data.map((item) => ({
-  //       day: convertToISODate(new Date(item.createDate)), // Định dạng ngày
-  //       times: {
-  //         checkIn: item.startCheck,
-  //         checkOut: item.endCheck,
-  //       },
-  //     }));
-
-  //     // Cập nhật monthData với dữ liệu đã định dạng
-  //     setMonthData(formattedData);
-  //   }
-  // }, [data]);
-
-  const handleUpdateMultipleTimeKeeping = async () => {
-    if (
-      dailyTimes?.length === 0 ||
-      dailyTimes.every((time) => time.checkIn === "" && time.checkOut === "")
-    ) {
-      if (
-        !window.confirm(
-          "Các mốc chấm công đều rỗng. Bạn có chắc muốn xóa hết ngày công không?"
-        )
-      ) {
-        return;
-      }
-    }
-
-    if (!validateTimes(dailyTimes)) {
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const timeStart = [];
-      const timeEnd = [];
-      for (const time of dailyTimes) {
-        timeStart.push(time.checkIn);
-        timeEnd.push(time.checkOut === "00:00" ? "24:00" : time.checkOut);
-      }
-      const response = await UpdateMultipleTimeKeeping(
-        employee.id,
-        statechinhanh,
-        employee.name,
-        "..",
-        timeStart,
-        timeEnd,
-        formatDate(dateRange[0]),
-        formatDate(dateRange[1])
-      );
-
-      if (response) {
-        await fetchTimekeepingData();
-      }
-      setIsSuccess(true);
-      setTimeout(() => setIsSuccess(false), 500);
-      setDateRange([]);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleClickOutside = (e) => {
     if (modalRef.current && !modalRef.current.contains(e.target)) {
@@ -401,37 +64,7 @@ const EmployeeDetailModal = ({
     }
   };
 
-  const fetchTimekeepingData = async () => {
-    setIsCalendarLoading(true);
-    try {
-      const start = convertToISODate(startOfMonth(currentMonth));
-      const end = convertToISODate(endOfMonth(currentMonth));
-      if (employee) {
-        const res = await Get_TIMEKEEPING_By_StaffID(start, end, employee.id);
-        if (res && res?.length > 0) {
-          setTimekeepingData(res);
-          const formattedData = res.map((item) => ({
-            day: convertToISODate(new Date(item.createDate)),
-            times: {
-              checkIn: item?.startCheck,
-              checkOut: item?.endCheck,
-            },
-          }));
-          console.log("🚀 ~ formattedData ~ formattedData:", formattedData);
-          setMonthData(formattedData);
-        } else {
-          setTimekeepingData([]);
-          setMonthData([]);
-        }
-      }
-    } catch (error) {
-    } finally {
-      setIsCalendarLoading(false);
-    }
-  };
-
   useEffect(() => {
-    console.log(data?.data?.data);
     const formattedData = data?.data?.data.map((item) => ({
       day: convertToISODate(new Date(item.createDate)),
       times: {
@@ -439,17 +72,14 @@ const EmployeeDetailModal = ({
         checkOut: item?.endCheck,
       },
     }));
-    console.log("🚀 ~ formattedData ~ formattedData:", formattedData);
     setMonthData(formattedData);
-    console.log("data", data?.data?.data);
   }, [monthSelect, data]);
 
   useEffect(() => {
     if (employee) {
       setSelectedDate(null);
-      // fetchTimekeepingData();
     }
-  }, [employee, employee, currentMonth, statechinhanh, monthSelect]);
+  }, [employee, employee, statechinhanh, monthSelect]);
 
   useEffect(() => {
     if (open) {
@@ -462,11 +92,7 @@ const EmployeeDetailModal = ({
     };
   }, [open]);
 
-  // console.log("monthData =========>    ", monthData);
-
   const renderCalendarTileContent = ({ date, view }) => {
-    console.log("month data : ", monthData);
-
     // Kiểm tra chỉ áp dụng cho chế độ xem "month"
     if (view === "month") {
       // Lọc dữ liệu để tìm ngày khớp với date hiện tại của tile
@@ -516,30 +142,6 @@ const EmployeeDetailModal = ({
     );
     setDailyTimes(newTimes);
   };
-
-  useEffect(() => {
-    if (multiDay) {
-      const filteredData = monthData?.filter((d) =>
-        isWithinInterval(d.day, { start: dateRange[0], end: dateRange[1] })
-      );
-
-      const minTimes = filteredData?.length
-        ? Math.min(...filteredData.map((d) => d.times?.length))
-        : 0;
-
-      const resetTimes = Array.from(
-        { length: minTimes === 0 ? 1 : minTimes },
-        () => ({
-          checkIn: "",
-          checkOut: "",
-        })
-      );
-
-      setDailyTimes(resetTimes);
-    } else {
-      setDailyTimes([{ checkIn: "", checkOut: "" }]);
-    }
-  }, [multiDay, dateRange, monthData]);
 
   const handleExportDataToExcel = () => {
     const sheetData = data?.data?.data?.map((item) => ({
@@ -750,33 +352,17 @@ const EmployeeDetailModal = ({
                     overflow: "hidden",
                   }}
                 >
-                  <Backdrop
-                    sx={{
-                      color: "#fff",
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      zIndex: 1,
-                      borderRadius: 2,
-                      backgroundColor: "rgba(0,0,0,0.1)",
-                    }}
-                    open={isCalendarLoading}
-                  >
-                    <CircularProgress color="inherit" />
-                  </Backdrop>
                   {/* CALENDER MAIN */}
                   <Box
                     sx={{
-                      opacity: isCalendarLoading ? 0.5 : 1,
+                      opacity: 0.5,
                       fontSize: { xs: "10px", sm: "10px", md: "14px" },
                       overflow: "hidden",
                     }}
                   >
                     <Calendar
                       onActiveStartDateChange={handleMonthChange}
-                      value={multiDay ? dateRange : selectedDate}
+                      value={selectedDate}
                       tileContent={renderCalendarTileContent}
                       onClickDay={(value, event) =>
                         handleOpenPopover(event, value)
@@ -785,7 +371,7 @@ const EmployeeDetailModal = ({
                   </Box>
                 </Box>
               </Box>
-              {(selectedDate || multiDay) && (
+              {selectedDate && (
                 <Box
                   display={"flex"}
                   flexDirection={"column"}
@@ -853,7 +439,12 @@ const EmployeeDetailModal = ({
               </Box>
 
               {/* Table */}
-              <Box class="">
+              <Box
+                sx={{
+                  flex:1,
+                  height:"100%"
+                }}
+              >
                 {data?.data?.data?.length > 0 ? (
                   <TableCustom data={data?.data?.data}></TableCustom>
                 ) : (
@@ -867,6 +458,7 @@ const EmployeeDetailModal = ({
                     <img
                       style={{ marginTop: 32 }}
                       width={"44%"}
+                      alt="404"
                       src="https://nissan.navigation.com/static/WFS/Shop-Site/-/Shop/en_US/Product%20Not%20Found.png"
                     ></img>
                   </div>

@@ -12,7 +12,7 @@ import i18n from "../../../i18n/i18n";
 
 const TableCustom = ({ data }) => {
   return (
-    <>
+    <div style={{ height:"100%"}}>
       {data?.length > 0 && (
         <div className="table-container">
           <table class="table-detail-tracking">
@@ -95,7 +95,7 @@ const TableCustom = ({ data }) => {
           </table>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
