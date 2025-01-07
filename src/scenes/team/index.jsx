@@ -256,6 +256,7 @@ const Team = () => {
     };
     const res = await Get_all_TIMEKEEPING_By_DateF_DateT_branchID(jsonfetch);
     if (res) {
+      console.log("====res===", res);
       setStateTimekeep(JSON.parse(res));
     }
     setIsLoadingTimekeeping(false);
@@ -279,7 +280,7 @@ const Team = () => {
         selectedMonth.year,
         selectedMonth.month
       );
-      fetchingTimekeep(statechinhanh, startDate, endDate);
+      fetchingTimekeep(statechinhanh, selectedMonth.month, selectedMonth.year);
     }
   }, [selectedMonth, statechinhanh]);
 
@@ -290,7 +291,6 @@ const Team = () => {
       );
       return;
     }
-    console.log(stateTimekeep);
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Bảng chấm công");
     const daysInMonth = new Date(
@@ -321,6 +321,7 @@ const Team = () => {
       "Ngày trong tháng",
       ...Array.from({ length: daysInMonth - 1 }, () => ""),
       "Tổng cộng",
+      "Tăng ca",
     ]);
     worksheet.mergeCells(3, 1, 4, 1);
     worksheet.mergeCells(3, 2, 4, 2);
@@ -342,7 +343,7 @@ const Team = () => {
 
     // Apply fill color to title and month-year rows
     for (let i = 1; i <= 2; i++) {
-      for (let j = 1; j <= 4 + daysInMonth; j++) {
+      for (let j = 1; j <= 5 + daysInMonth; j++) {
         const cell = worksheet.getCell(i, j);
         cell.fill = {
           type: "pattern",
@@ -358,7 +359,7 @@ const Team = () => {
 
     // Apply fill color to header rows
     for (let i = 3; i <= 5; i++) {
-      for (let j = 1; j <= 4 + daysInMonth; j++) {
+      for (let j = 1; j <= 5 + daysInMonth; j++) {
         const cell = worksheet.getCell(i, j);
         cell.fill = {
           type: "pattern",
@@ -395,89 +396,30 @@ const Team = () => {
     // Process rows and apply custom formatting
     const rows = stateStaff.map((staff, index) => {
       const hours = Array(daysInMonth).fill(0);
-      stateTimekeep.forEach((timekeep) => {
-        if (timekeep.staffid === staff.id) {
-          const timekeepDate = new Date(timekeep.createDate);
-          if (
-            timekeepDate.getMonth() + 1 === selectedMonth.month &&
-            timekeepDate.getFullYear() === selectedMonth.year
-          ) {
-            const day = timekeepDate.getDate();
-            let totalHours = 0;
-            let totalMinutes = 0;
-            for (let i = 0; i < timekeep.startCheck.length; i++) {
-              let startHour = 0,
-                startMinute = 0,
-                endHour = 0,
-                endMinute = 0;
-              if (
-                typeof timekeep.startCheck === "string" &&
-                typeof timekeep.endCheck === "string"
-              ) {
-                [startHour, startMinute] = timekeep.startCheck
-                  .split(":")
-                  .map(Number);
-                [endHour, endMinute] = timekeep.endCheck.split(":").map(Number);
-              }
-
-              const start = new Date(0, 0, 0, startHour, startMinute);
-              const end = new Date(0, 0, 0, endHour, endMinute);
-
-              const diffMilliseconds = end - start;
-              if (typeof diffMilliseconds == "number") {
-                totalHours += Math.floor(diffMilliseconds / (1000 * 60 * 60));
-                totalMinutes += Math.floor(
-                  (diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
-                );
+      stateTimekeep?.forEach((paySlip) => {
+        // totalHours = paySlip?.dataPayslip?.total / 60
+        if (paySlip?.user?.phone === staff.phone) {
+          paySlip?.dataPayslip?.data?.map((timekeep) => {
+            const timekeepDate = new Date(timekeep?.createDate);
+            if (
+              timekeepDate.getMonth() + 1 === selectedMonth.month &&
+              timekeepDate.getFullYear() === selectedMonth.year
+            ) {
+              const day = timekeepDate.getDate();
+              let adjustedHours = (timekeep?.time - timekeep?.fined) / 60;
+              if (adjustedHours) {
+                hours[day - 1] = adjustedHours.toFixed(2);
               }
             }
-            let startHour = 0,
-              startMinute = 0,
-              endHour = 0,
-              endMinute = 0;
-            if (
-              typeof timekeep.startCheck === "string" &&
-              typeof timekeep.endCheck === "string"
-            ) {
-              [startHour, startMinute] = timekeep.startCheck
-                .split(":")
-                .map(Number);
-              [endHour, endMinute] = timekeep.endCheck.split(":").map(Number);
-            }
-
-            const start = new Date(0, 0, 0, startHour, startMinute);
-            const end = new Date(0, 0, 0, endHour, endMinute);
-
-            const diffMilliseconds = end - start;
-
-            let adjustedHours =
-              Math.floor(diffMilliseconds / (1000 * 60 * 60)) +
-              Math.floor((diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)) /
-                60;
-
-            if (
-              staff.Role === ROLE_EMPLOYEE.MANAGER.VALUE &&
-              adjustedHours >= 10
-            ) {
-              adjustedHours -= 1;
-            } else if (
-              staff.Role !== ROLE_EMPLOYEE.STAFF.VALUE &&
-              staff.Role !== ROLE_EMPLOYEE.MANAGER.VALUE &&
-              staff.Role !== ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE &&
-              adjustedHours >= 5
-            ) {
-              adjustedHours -= 1;
-            }
-
-            if (adjustedHours) {
-              hours[day - 1] = adjustedHours.toFixed(2);
-            }
-          }
+          });
         }
       });
-
-      const totalHours = hours.reduce((sum, val) => sum + parseFloat(val), 0);
-
+      const totalHours =
+        stateTimekeep?.find((i) => i?.user?.phone === staff?.phone)?.dataPayslip
+          ?.total / 60;
+      const total_overtime =
+        stateTimekeep?.find((i) => i?.user?.phone === staff?.phone)?.dataPayslip
+          ?.total_overtime / 60;
       return {
         TT: index + 1,
         "Họ tên": staff.name,
@@ -490,6 +432,10 @@ const Team = () => {
         },
         "Tổng cộng":
           totalHours.toFixed(2) * 1 === 0 ? "" : totalHours.toFixed(2) * 1,
+        "Tăng ca":
+          total_overtime.toFixed(2) * 1 === 0
+            ? ""
+            : total_overtime.toFixed(2) * 1,
       };
     });
 
@@ -500,6 +446,7 @@ const Team = () => {
         row["Chức vụ"],
         ...Object.values(row["Ngày trong tháng"]),
         row["Tổng cộng"],
+        row["Tăng ca"],
       ];
       const addedRow = worksheet.addRow(rowData);
       addedRow.alignment = { horizontal: "center" }; // Center align all cells in the row
@@ -533,317 +480,20 @@ const Team = () => {
     link.click();
   };
 
-  const handleExportExcelCines = async () => {
-    if (isLoadingTimekeeping || isInitialLoad) {
-      alert(
-        "Vui lòng chờ dữ liệu chấm công được tải xong trước khi xuất ra Excel."
-      );
-      return;
-    }
-
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Bảng chấm công");
-    const daysInMonth = new Date(
-      selectedMonth.year,
-      selectedMonth.month,
-      0
-    ).getDate();
-
-    // Add title row with custom formatting
-    const titleRow = worksheet.addRow(["BẢNG CHẤM CÔNG"]);
-    titleRow.font = { size: 16, bold: true, color: { argb: "0000000" } };
-    worksheet.mergeCells(1, 1, 1, 4 + daysInMonth);
-    titleRow.alignment = { horizontal: "center" };
-
-    // Add month-year row with custom formatting
-    const monthYearRow = worksheet.addRow([
-      `Tháng ${selectedMonth.month} năm ${selectedMonth.year}`,
-    ]);
-    monthYearRow.font = { size: 14, bold: true, color: { argb: "0000000" } };
-    worksheet.mergeCells(2, 1, 2, 4 + daysInMonth);
-    monthYearRow.alignment = { horizontal: "center" };
-
-    // Add header rows with custom formatting
-    const headerRow1 = worksheet.addRow([
-      "TT",
-      "Họ tên",
-      "Chức vụ",
-      "Ca làm",
-      "Ngày trong tháng",
-      ...Array.from({ length: daysInMonth - 1 }, () => ""),
-      "Tổng cộng",
-    ]);
-    worksheet.mergeCells(3, 1, 4, 1);
-    worksheet.mergeCells(3, 2, 4, 2);
-    worksheet.mergeCells(3, 3, 4, 3);
-    worksheet.mergeCells(3, 4, 4, 4); // Merge Ca làm
-    worksheet.mergeCells(3, 5, 3, 4 + daysInMonth);
-    worksheet.mergeCells(3, 5 + daysInMonth, 4, 5 + daysInMonth);
-    headerRow1.alignment = { vertical: "middle", horizontal: "center" };
-    headerRow1.font = { bold: true, color: { argb: "00000000" } };
-
-    const headerRow2 = worksheet.addRow([
-      "",
-      "",
-      "",
-      "",
-      ...Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`),
-      "",
-    ]);
-    headerRow2.alignment = { horizontal: "center" };
-    headerRow2.font = { bold: true, color: { argb: "00000000" } };
-
-    // Apply fill color to title and month-year rows
-    for (let i = 1; i <= 2; i++) {
-      for (let j = 1; j <= 5 + daysInMonth; j++) {
-        const cell = worksheet.getCell(i, j);
-        cell.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFFACE9C" },
-        };
-        cell.alignment = { horizontal: "center", vertical: "middle" };
-        cell.border = {
-          right: { style: "thin" },
-        };
-      }
-    }
-
-    // Apply fill color to header rows
-    for (let i = 3; i <= 5; i++) {
-      for (let j = 1; j <= 5 + daysInMonth; j++) {
-        const cell = worksheet.getCell(i, j);
-        cell.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFFDE2CA" },
-        };
-        cell.alignment = { horizontal: "center", vertical: "middle" };
-        cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        };
-      }
-    }
-
-    // Apply fill color to day columns
-    for (let j = 5; j <= 4 + daysInMonth; j++) {
-      const cell = worksheet.getCell(5, j);
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFF5A89A" },
-      };
-      cell.alignment = { horizontal: "center", vertical: "middle" };
-      cell.border = {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      };
-    }
-
-    // Process rows and apply custom formatting
-    const rows = stateStaff.map((staff, index) => {
-      const shift1 = Array(daysInMonth).fill("");
-      const shift2 = Array(daysInMonth).fill("");
-
-      stateTimekeep.forEach((timekeep) => {
-        if (timekeep.staffid === staff.id) {
-          const timekeepDate = new Date(timekeep.createDate);
-          if (
-            timekeepDate.getMonth() + 1 === selectedMonth.month &&
-            timekeepDate.getFullYear() === selectedMonth.year
-          ) {
-            const day = timekeepDate.getDate();
-            for (let i = 0; i < timekeep.startCheck.length; i++) {
-              let startHour = 0,
-                startMinute = 0,
-                endHour = 0,
-                endMinute = 0;
-              if (
-                typeof timekeep.startCheck[i] === "string" &&
-                typeof timekeep.endCheck[i] === "string"
-              ) {
-                [startHour, startMinute] = timekeep.startCheck[i]
-                  .split(":")
-                  .map(Number);
-                [endHour, endMinute] = timekeep.endCheck[i]
-                  .split(":")
-                  .map(Number);
-              }
-              const start = new Date(0, 0, 0, startHour, startMinute);
-              const end = new Date(0, 0, 0, endHour, endMinute);
-              const totalMinutesWorked = (end - start) / (1000 * 60);
-
-              if (startHour < 19 && endHour >= 20) {
-                const firstShiftEnd = new Date(0, 0, 0, 20, 0);
-                const firstShiftMinutes = (firstShiftEnd - start) / (1000 * 60);
-                let firstShiftHours = Math.floor(firstShiftMinutes / 60);
-                let firstShiftRemainingMinutes = firstShiftMinutes % 60;
-
-                let adjustedHours =
-                  firstShiftHours + firstShiftRemainingMinutes / 60;
-                if (
-                  staff.Role === ROLE_EMPLOYEE.MANAGER.VALUE &&
-                  adjustedHours >= 10
-                ) {
-                  adjustedHours -= 1;
-                } else if (
-                  staff.Role !== ROLE_EMPLOYEE.STAFF.VALUE &&
-                  staff.Role !== ROLE_EMPLOYEE.MANAGER.VALUE &&
-                  staff.Role !== ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE &&
-                  adjustedHours >= 5
-                ) {
-                  adjustedHours -= 1;
-                }
-
-                shift1[day - 1] = (shift1[day - 1] || 0) + adjustedHours || "";
-
-                const secondShiftMinutes =
-                  totalMinutesWorked - firstShiftMinutes;
-                const secondShiftHours = Math.floor(secondShiftMinutes / 60);
-                const secondShiftRemainingMinutes = secondShiftMinutes % 60;
-                shift2[day - 1] =
-                  (shift2[day - 1] || 0) +
-                    secondShiftHours +
-                    secondShiftRemainingMinutes / 60 || "";
-              } else if (startHour >= 19) {
-                shift2[day - 1] =
-                  (shift2[day - 1] || 0) + totalMinutesWorked / 60 || "";
-              } else {
-                let adjustedHours = totalMinutesWorked / 60;
-                if (
-                  staff.Role === ROLE_EMPLOYEE.MANAGER.VALUE &&
-                  adjustedHours >= 10
-                ) {
-                  adjustedHours -= 1;
-                } else if (
-                  staff.Role !== ROLE_EMPLOYEE.STAFF.VALUE &&
-                  staff.Role !== ROLE_EMPLOYEE.MANAGER.VALUE &&
-                  staff.Role !== ROLE_EMPLOYEE.DEPUTY_MANAGER.VALUE &&
-                  adjustedHours >= 5
-                ) {
-                  adjustedHours -= 1;
-                }
-                shift1[day - 1] = (shift1[day - 1] || 0) + adjustedHours || "";
-              }
-            }
-          }
-        }
-      });
-
-      const totalHours =
-        shift1.reduce((sum, val) => sum + (parseFloat(val) || 0), 0) +
-        shift2.reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
-
-      return {
-        TT: index + 1,
-        "Họ tên": staff.name,
-        "Chức vụ": staff.Role,
-        "Ca 1": shift1,
-        "Ca 2": shift2,
-        "Tổng cộng": totalHours.toFixed(2) * 1,
-      };
-    });
-    rows.forEach((row) => {
-      const rowData = [
-        row["TT"],
-        row["Họ tên"],
-        row["Chức vụ"],
-        "Ca 1",
-        ...Object.values(row["Ca 1"]),
-        row["Tổng cộng"],
-      ];
-      const addedRow = worksheet.addRow(rowData);
-      addedRow.alignment = { horizontal: "center" }; // Center align all cells in the row
-
-      // Apply border to each cell in the row
-      addedRow.eachCell((cell) => {
-        cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        };
-      });
-
-      const rowData2 = ["", "", "", "Ca 2", ...Object.values(row["Ca 2"]), ""];
-      const addedRow2 = worksheet.addRow(rowData2);
-      addedRow2.alignment = { horizontal: "center" }; // Center align all cells in the row
-
-      // Apply border to each cell in the row
-      addedRow2.eachCell((cell) => {
-        cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        };
-      });
-    });
-    // worksheet.spliceRows(4, 1);
-    let currentRow = 6; // Row start after the headers (4 header rows + 1 initial row + 1 more for Excel indexing start at 1)
-    const mergeCellMapping = {
-      28: "AG",
-      29: "AH",
-      30: "AI",
-      31: "AJ",
-    };
-    rows.forEach((row, index) => {
-      worksheet.mergeCells(`A${currentRow}:A${currentRow + 1}`);
-      worksheet.mergeCells(`B${currentRow}:B${currentRow + 1}`);
-      worksheet.mergeCells(`C${currentRow}:C${currentRow + 1}`);
-      ["A", "B", "C"].forEach((column) => {
-        const cell = worksheet.getCell(`${column}${currentRow}`);
-        cell.alignment = { vertical: "middle", horizontal: "center" };
-      });
-      const columnLetter = mergeCellMapping[daysInMonth];
-      if (columnLetter) {
-        worksheet.mergeCells(
-          `${columnLetter}${currentRow}:${columnLetter}${currentRow + 1}`
-        );
-        const cell = worksheet.getCell(`${columnLetter}${currentRow}`);
-        cell.alignment = { vertical: "middle", horizontal: "center" };
-      }
-      currentRow += 2;
-    });
-
-    worksheet.columns = [
-      { width: 5 },
-      { width: 30 },
-      { width: 20 },
-      { width: 15 },
-      ...Array.from({ length: daysInMonth }, () => ({ width: 5 })),
-      { width: 15 },
-    ];
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-    const link = document.createElement("a");
-    link.href = window.URL.createObjectURL(blob);
-    link.download = `Bảng chấm công tháng ${selectedMonth.month} năm ${selectedMonth.year}.xlsx`;
-    link.click();
-  };
 
   let checkaccess = false;
   let chinhanhdau = "";
 
-  const fetchingTimekeep = async (branchId, createF, createT) => {
+  const fetchingTimekeep = async (branchId, month, year) => {
     setIsLoadingTimekeeping(true);
     const jsonfetch = {
       branchID: branchId,
-      createDateF: createF,
-      createDateT: createT,
+      month,
+      year,
     };
     const objBranch = await Get_all_TIMEKEEPING_By_DateF_DateT_branchID(
       jsonfetch
     );
-
     if (objBranch instanceof Promise) {
       const resolvedResult = await objBranch;
       setStateTimekeep(JSON.parse(resolvedResult));
@@ -931,6 +581,7 @@ const Team = () => {
       }
     }
   };
+
   useEffect(() => {
     const fetchingapi = async () => {
       try {
@@ -956,7 +607,11 @@ const Team = () => {
           currentYear,
           currentMonth
         );
-        await fetchingTimekeep(chinhanhdau, startDate, endDate);
+        await fetchingTimekeep(
+          chinhanhdau,
+          selectedMonth.month,
+          selectedMonth.year
+        );
         setIsInitialLoad(false);
       } catch (error) {
         console.error("Error fetching API data:", error);
@@ -1072,7 +727,7 @@ const Team = () => {
               <Button
                 onClick={
                   statechinhanh === "BT004"
-                    ? handleExportExcelCines
+                    ? handleExportExcel
                     : handleExportExcel
                 }
                 disabled={isLoadingTimekeeping}

@@ -29,34 +29,34 @@ export const routes = [
     element: <Father children={<ChamCong />} />,
     public: false,
   },
-  {
-    path: "/contacts",
-    element: <Father children={<Contacts />} />,
-    public: false,
-  },
+  // {
+  //   path: "/contacts",
+  //   element: <Father children={<Contacts />} />,
+  //   public: false,
+  // },
   { path: "/form", element: <Father children={<Form />} />, public: false },
-  {
-    path: "/invoices",
-    element: <Father children={<Invoices />} />,
-    public: false,
-  },
-  {
-    path: "/xuatkho",
-    element: <Father children={<XUATKHO />} />,
-    public: false,
-  },
-  { path: "/orders", element: <Father children={<ORDER />} />, public: false },
-  { path: "/bills", element: <Father children={<Bills />} />, public: false },
-  {
-    path: "/doanhthu",
-    element: <Father children={<DOANHTHU />} />,
-    public: false,
-  },
-  {
-    path: "/debtors",
-    element: <Father children={<DEBTORS />} />,
-    public: false,
-  },
+  // {
+  //   path: "/invoices",
+  //   element: <Father children={<Invoices />} />,
+  //   public: false,
+  // },
+  // {
+  //   path: "/xuatkho",
+  //   element: <Father children={<XUATKHO />} />,
+  //   public: false,
+  // },
+  // { path: "/orders", element: <Father children={<ORDER />} />, public: false },
+  // { path: "/bills", element: <Father children={<Bills />} />, public: false },
+  // {
+  //   path: "/doanhthu",
+  //   element: <Father children={<DOANHTHU />} />,
+  //   public: false,
+  // },
+  // {
+  //   path: "/debtors",
+  //   element: <Father children={<DEBTORS />} />,
+  //   public: false,
+  // },
   {
     path: "/account",
     element: <Father children={<ACCOUNT />} />,
@@ -68,5 +68,5 @@ export const routes = [
     public: false,
   },
   { path: "/login", element: <Login />, public: true },
-  { path: "/pending-orders", element: <Father children={<PendingOrders />} />, public: false },
+  // { path: "/pending-orders", element: <Father children={<PendingOrders />} />, public: false },
 ];

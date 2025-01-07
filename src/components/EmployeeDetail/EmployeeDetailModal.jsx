@@ -23,6 +23,7 @@ import PayslipItem from "./PayslipItem";
 import PayslipList from "./PayslipList";
 import "./style.css";
 import TimeKeepingLabel from "./TimeKeepingLabel";
+import moment from "moment";
 
 const EmployeeDetailModal = ({
   open,
@@ -109,7 +110,7 @@ const EmployeeDetailModal = ({
               <div
                 style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
               >
-                {dayData[0].times.checkIn}
+                {moment(dayData[0].times.checkIn).format("HH:mm")}
               </div>
               <ArrowDownwardIcon
                 style={{ fontSize: "0.8rem", color: "#E41395" }}
@@ -117,7 +118,8 @@ const EmployeeDetailModal = ({
               <div
                 style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
               >
-                {dayData[0].times.checkOut || ""}
+                 {dayData[0].times.checkOut?moment(dayData[0].times.checkOut).format("HH:mm"):"-"}
+                {/* {dayData[0].times.checkOut || ""} */}
               </div>
             </Box>
           )}

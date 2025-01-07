@@ -1,4 +1,9 @@
-import { useState } from "react";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import LogoutIcon from "@mui/icons-material/Logout";
+import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
+import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
+import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 import {
   Badge,
   Box,
@@ -11,37 +16,23 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { Link } from "react-router-dom";
-import "react-pro-sidebar/dist/css/styles.css";
-import { tokens } from "../../theme";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
-import LogoutIcon from "@mui/icons-material/Logout";
-import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
-import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import HandleAccessAccount from "../handleAccess/handleAccess";
-import StorefrontIcon from "@mui/icons-material/Storefront";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Collapse from "react-bootstrap/Collapse";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import "react-pro-sidebar/dist/css/styles.css";
+import { Link, useNavigate } from "react-router-dom";
+import { tokens } from "../../theme";
+import HandleAccessAccount from "../handleAccess/handleAccess";
 // import ExpandMoreIcon from "@mui/icons-material/ExpandLess";
+import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/KeyboardArrowRight";
-import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
-import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
-import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
-import { setLoggingIn } from "../../api/common";
 // import "../../components/EmployeeDetail/style.css";
 import { useMediaQuery } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import "../../index.css";
-import {
-  Get_all_Order,
-  Get_all_Order_By_StoreID_Year_Month,
-} from "../xuatkho/handlePhieustore";
 import { useOrderContext } from "../../context/OrderContext";
 import { useSidebar } from "../../context/SidebarContext";
+import "../../index.css";
 const CustomListItem = styled(ListItem)(() => ({
   "&:hover": {
     color: "#fff",
@@ -345,7 +336,7 @@ const Sidebar = () => {
                 )}
               </List>
             </Collapse>
-            <CustomListItem
+            {/* <CustomListItem
               sx={{ backgroundColor: "#454545", height: "50px" }}
               button
               onClick={() => setOpenpage(!openpage)}
@@ -356,8 +347,8 @@ const Sidebar = () => {
               </ListItemIcon>
               <ListItemText primary={t("BDTK")} />
               {!openpage ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </CustomListItem>
-            <Collapse in={openpage} timeout="auto" unmountOnExit>
+            </CustomListItem> */}
+            {/* <Collapse in={openpage} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
                 <CustomListItem
                   button
@@ -422,8 +413,8 @@ const Sidebar = () => {
                   </CustomListItem>
                 )}
               </List>
-            </Collapse>
-            {check && (
+            </Collapse> */}
+            {/* {check && (
               <CustomListItem
                 sx={{ backgroundColor: "#454545", height: "50px" }}
                 button
@@ -483,8 +474,8 @@ const Sidebar = () => {
                   </CustomListItem>
                 </List>
               </Collapse>
-            )}
-            <CustomListItem
+            )} */}
+            {/* <CustomListItem
               sx={{ backgroundColor: "#454545", height: "50px" }}
               button
               onClick={() => setOpen(!open)}
@@ -495,9 +486,9 @@ const Sidebar = () => {
               </ListItemIcon>
               <ListItemText primary={t("HV")} />
               {!open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </CustomListItem>
+            </CustomListItem> */}
 
-            <Collapse in={open} timeout="auto" unmountOnExit>
+            {/* <Collapse in={open} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
                 <CustomListItem
                   button
@@ -567,7 +558,7 @@ const Sidebar = () => {
                   </CustomListItem>
                 )}
               </List>
-            </Collapse>
+            </Collapse> */}
           </List>
         </List>
       </Drawer>

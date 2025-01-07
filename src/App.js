@@ -1,14 +1,8 @@
-import { useEffect, useState } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { ColorModeContext, useMode } from "./theme";
-import { routes } from "./route/route";
+import { Navigate, Route, Routes } from "react-router-dom";
 import PrivateRoute, { PublicRoute } from "./route/PrivateRoute";
-import API from "./api/APIInterceptor";
+import { routes } from "./route/route";
 // API.interceptor();
 function App() {
-  const [theme, colorMode] = useMode();
-  const [isSidebar, setIsSidebar] = useState(true);
-
   return (
     <Routes>
       {routes.map((route, index) => {

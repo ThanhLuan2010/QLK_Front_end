@@ -18,16 +18,28 @@ export const HandleCreateTimekeeps = async (req) => {
   return response;
 };
 
+// export const Get_all_TIMEKEEPING_By_DateF_DateT_branchID = async (req) => {
+//   const response = await firstValueFrom(
+//     Method.post(`${Url_BackEnd}/timekeep/get-payslip-by-branch`, {
+//       branchID: req.branchID,
+//       createDateF: req.createDateF,
+//       createDateT: req.createDateT,
+//     })
+//   );
+//   return JSON.stringify(response.all_Time);
+// };
+
 export const Get_all_TIMEKEEPING_By_DateF_DateT_branchID = async (req) => {
   const response = await firstValueFrom(
-    Method.post(`${Url_BackEnd}/timekeep/getAllTimekeeep`, {
-      branchID: req.branchID,
-      createDateF: req.createDateF,
-      createDateT: req.createDateT,
+    Method.get(`${Url_BackEnd}/timekeep/get-payslip-by-branch`, {
+      branchId: req.branchID,
+      month: req.month,
+      year: req.year,
     })
   );
-  return JSON.stringify(response.all_Time);
+  return JSON.stringify(response.data);
 };
+
 
 export const Get_TIMEKEEPING_By_StaffID = async (
   createDateF,

@@ -42,7 +42,7 @@ i18n.use(initReactI18next).init({
         QLHD: "Quản lý hóa đơn",
         QLDT: "Quản lý doanh thu",
         QLCN: "Quản lý công nợ",
-        HV: "Hành vi",
+        HV: "Hành vis",
         NK: "Nhập kho",
         XK: "Xuất kho",
         TKCT: "Tồn kho công ty",
