@@ -24,6 +24,9 @@ import PayslipList from "./PayslipList";
 import "./style.css";
 import TimeKeepingLabel from "./TimeKeepingLabel";
 import moment from "moment";
+import { Method } from "../../api/common";
+import Url_BackEnd from "../../URL";
+import { firstValueFrom } from "rxjs";
 
 const EmployeeDetailModal = ({
   open,
@@ -118,7 +121,9 @@ const EmployeeDetailModal = ({
               <div
                 style={{ fontSize: 12, fontWeight: "bold", color: "#E41395" }}
               >
-                 {dayData[0].times.checkOut?moment(dayData[0].times.checkOut).format("HH:mm"):"-"}
+                {dayData[0].times.checkOut
+                  ? moment(dayData[0].times.checkOut).format("HH:mm")
+                  : "-"}
                 {/* {dayData[0].times.checkOut || ""} */}
               </div>
             </Box>
@@ -242,6 +247,21 @@ const EmployeeDetailModal = ({
     }
   };
 
+  const onDelete = async () => {
+    const response = await firstValueFrom(
+      Method.post(`${Url_BackEnd}/Staff/deletedstaff`, {
+        arraydeleted: [
+          {
+            id: employee?.id,
+            branchID: statechinhanh,
+          },
+        ],
+      })
+    );
+    toast(response?.message);
+    handleModalClose()
+  };
+
   return (
     <>
       <PopoverCustom
@@ -318,10 +338,11 @@ const EmployeeDetailModal = ({
           <Box
             sx={{
               zIndex: 1000,
-              display: "block",
+              display: "flex",
+              alignItems: "center",
               marginTop: { xs: -8, sm: -4, md: 0, lg: 0 },
             }}
-            class="card-custom-id"
+            // class="card-custom-id"
           >
             <CardCustom
               name={employee?.name}
@@ -329,6 +350,10 @@ const EmployeeDetailModal = ({
               role={employee?.Role}
               avatarUser={employee?.avatar}
             ></CardCustom>
+
+            <Button onClick={onDelete} style={{ backgroundColor: "red" }}>
+              Xoá nhân viên
+            </Button>
           </Box>
 
           {/* Body Main */}
@@ -443,8 +468,8 @@ const EmployeeDetailModal = ({
               {/* Table */}
               <Box
                 sx={{
-                  flex:1,
-                  height:"100%"
+                  flex: 1,
+                  height: "100%",
                 }}
               >
                 {data?.data?.data?.length > 0 ? (

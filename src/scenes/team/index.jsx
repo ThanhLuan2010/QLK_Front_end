@@ -770,24 +770,6 @@ const Team = () => {
                 updateTimekeepingData={fetchTimekeepingData}
                 updateStaff={fetchingGettAllStaft_by_branchID}
               />
-              {!isloading ? (
-                <Button
-                  style={{ marginLeft: "1%" }}
-                  onClick={handleSaveClick}
-                  className={classes.buttonDelete}
-                >
-                  {!isXsScreen && i18n.t("XOANV")}
-
-                  <DeleteForeverOutlinedIcon sx={{ ml: 1 }} />
-                </Button>
-              ) : (
-                <Button
-                  style={{ marginLeft: "1%", backgroundColor: "grey" }}
-                  className={classes.buttonDelete}
-                >
-                  <i class="fa fa-spinner fa-spin"></i> Deleting..
-                </Button>
-              )}
             </Box>
           </Box>
         </Box>
